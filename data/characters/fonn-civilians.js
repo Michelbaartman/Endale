@@ -60,6 +60,207 @@ Endale.registerPage('characters/fonn-civilians', {
       ]
     },
 
+    /* ── Applecrumb family — individual cards ───────────────────────── */
+    {
+      type: 'cards',
+      headerClass: 'h-apple',
+      entries: [
+        {
+          name: 'Arite Applecrumb',
+          role: 'Mousekin \u00b7 Older brother \u00b7 Sable\u2019s sibling',
+          rank: ['Applecrumb Family', 'Allegiance unclear'],
+          fields: [
+            { label: 'Personality', value: 'The eldest. Steady, serious, says little. Has always been between Fenlow and the rest of the family without explicitly choosing a side.' },
+            { label: 'Hook',        value: 'Knows more about the night of the compact than he has told anyone. Has been protecting someone \u2014 unclear who \u2014 by staying quiet.' },
+          ],
+          tags: [
+            { label: 'Knows about the compact', cls: 'tag-purple' },
+            { label: 'Protecting someone',      cls: 'tag-mid' },
+          ]
+        },
+        {
+          name: 'Lumi Applecrumb',
+          role: 'Mousekin \u00b7 Older sister \u00b7 Sable\u2019s sibling',
+          rank: ['Applecrumb Family', 'Friendly'],
+          fields: [
+            { label: 'Personality', value: 'Instinctively protective of Sable even when she\u2019s frustrated with him. Sharp tongue, warm underneath it. Biggus\u2019s operation makes her uncomfortable in a way she can\u2019t articulate.' },
+            { label: 'Hook',        value: 'The first sibling likely to approach Sable with questions. Has noticed Fenlow\u2019s odd behaviour and it is frightening her.' },
+          ],
+          tags: [
+            { label: 'Protects Sable', cls: 'tag-green' },
+            { label: 'Fenlow concern', cls: 'tag-gold' },
+          ]
+        },
+        {
+          name: 'Mira Applecrumb',
+          role: 'Mousekin \u00b7 Middle sibling \u00b7 Sable\u2019s sibling',
+          rank: ['Applecrumb Family', 'Neutral'],
+          fields: [
+            { label: 'Personality', value: 'Peacekeeper by nature, exhausted by the feud, tries to keep family dinners civil. Has mostly succeeded by refusing to know things.' },
+            { label: 'Hook',        value: 'Deliberately keeps herself uninformed. If she is forced to know something, she will have to pick a side \u2014 and she knows it.' },
+          ],
+          tags: [
+            { label: 'Wilful ignorance', cls: 'tag-mid' },
+            { label: 'Forced choice ahead', cls: 'tag-light' },
+          ]
+        },
+        {
+          name: 'Tilla Applecrumb',
+          role: 'Mousekin \u00b7 Middle sibling \u00b7 Sable\u2019s sibling',
+          rank: ['Applecrumb Family', 'Neutral'],
+          fields: [
+            { label: 'Personality', value: 'Quieter than the others. Watches more than she speaks. Has been watching Biggus\u2019s operation with something between concern and fascination for months.' },
+            { label: 'Hook',        value: 'Has seen things going in and out of the mansion she has not reported. Fear, not loyalty, is keeping her quiet.' },
+          ],
+          tags: [
+            { label: 'Has seen things', cls: 'tag-gold' },
+            { label: 'Silent from fear', cls: 'tag-mid' },
+          ]
+        },
+        {
+          name: 'Nib Applecrumb',
+          role: 'Mousekin \u00b7 Younger brother \u00b7 Sable\u2019s sibling',
+          rank: ['Applecrumb Family', 'Hostile'],
+          fields: [
+            { label: 'Personality', value: 'Brash, quick to anger, fully bought into Biggus\u2019s vision of an expanded Fonn. Thinks Sable is an embarrassment and says so.' },
+            { label: 'Hook',        value: 'Active in Biggus\u2019s operation at a low level \u2014 runs messages, keeps watch. Genuinely believes in the cause. Not cruel, just committed and young.' },
+          ],
+          tags: [
+            { label: 'True believer', cls: 'tag-dark' },
+            { label: 'Active operative', cls: 'tag-mid' },
+          ]
+        },
+        {
+          name: 'Pip Applecrumb',
+          role: 'Mousekin \u00b7 Youngest \u00b7 Sable\u2019s sibling',
+          rank: ['Applecrumb Family', 'Innocent'],
+          fields: [
+            { label: 'Personality', value: 'A child. Cheerful, oblivious, follows Sable around when he\u2019s home. Has no idea what any of this is about.' },
+            { label: 'Hook',        value: 'The one person in the family everyone agrees must be kept out of it. Even Nib. Even Nessa.' },
+          ],
+          tags: [
+            { label: 'Child', cls: 'tag-green' },
+            { label: 'Untouchable', cls: 'tag-light' },
+          ]
+        },
+        {
+          name: 'Rook Applecrumb',
+          role: 'Mousekin \u00b7 Grandfather',
+          rank: ['Applecrumb Family', 'Unknown'],
+          fields: [
+            { label: 'Appearance',  value: 'Old, sparse with words, moves slowly. Sits by the window most days. Seems unremarkable to everyone.' },
+            { label: 'Hook',        value: 'Knew the woman in the grey cloak. May have been the original target of an earlier version of the Curse of Tongues. What he knows \u2014 and whether he still knows it \u2014 is one of the campaign\u2019s slow-burn mysteries.' },
+          ],
+          gmNote: 'Fenlow\u2019s letter points somewhere near Rook. Sable\u2019s magic immunity may trace back to him.',
+          tags: [
+            { label: 'Grey cloak connection',  cls: 'tag-purple' },
+            { label: 'Slow-burn mystery',      cls: 'tag-mid' },
+            { label: 'Sable\u2019s immunity \u2014 possible origin', cls: 'tag-gold' },
+          ]
+        },
+      ]
+    },
+
+    /* ── Fonn townsfolk — individual cards ──────────────────────────── */
+    {
+      type: 'cards',
+      headerClass: 'h-town',
+      entries: [
+        {
+          name: 'Halder',
+          role: 'Boarfolk \u00b7 Butcher',
+          rank: ['Fonn Civilian', 'Neutral'],
+          fields: [
+            { label: 'Personality', value: 'Big, gruff, fair to everyone equally. Charges what things cost, no more. Dislikes the Lionguard\u2019s presence purely on principle \u2014 too many mouths, not enough coin upfront.' },
+            { label: 'Hook',        value: 'Has noticed the ratmen buying unusual quantities of smoked meat over the past month. Didn\u2019t think much of it. Would mention it if asked the right question.' },
+          ],
+          tags: [
+            { label: 'Ratmen buying meat', cls: 'tag-gold' },
+            { label: 'Neutral',            cls: 'tag-light' },
+          ]
+        },
+        {
+          name: 'Wren',
+          role: 'Sparrowfolk \u00b7 Tailor',
+          rank: ['Fonn Civilian', 'Information source'],
+          fields: [
+            { label: 'Personality', value: 'Small, quick, talks constantly and remembers everything. The village\u2019s unofficial social registry. Knows who is sleeping badly, who has been arguing, who received a visitor.' },
+            { label: 'Hook',        value: 'Has noticed which villagers have gone missing from their routines. Has a mental list she hasn\u2019t shared with anyone because nobody has asked. The list overlaps significantly with the cellar.' },
+          ],
+          tags: [
+            { label: 'Key info source', cls: 'tag-blue' },
+            { label: 'Missing persons list', cls: 'tag-red' },
+          ]
+        },
+        {
+          name: 'Gorin',
+          role: 'Badgerfolk \u00b7 Retired soldier',
+          rank: ['Fonn Civilian', 'Ally'],
+          fields: [
+            { label: 'Personality', value: 'Settled, deliberate, hard to rattle. Grows vegetables. Has the particular calm of someone who has seen the worst of things and decided the best response is a good harvest.' },
+            { label: 'Hook',        value: 'Recognised the ratmen\u2019s movement patterns as military the moment he saw them. Has been watching quietly. Would tell the party everything if approached respectfully and without wasting his time.' },
+          ],
+          tags: [
+            { label: 'Military intel', cls: 'tag-blue' },
+            { label: 'Ally', cls: 'tag-green' },
+          ]
+        },
+        {
+          name: 'Finn',
+          role: 'Otterfolk \u00b7 Fisher \u00b7 Dock patriarch',
+          rank: ['Fonn Civilian', 'Ally'],
+          fields: [
+            { label: 'Personality', value: 'Cheerful, weathered, smells permanently of the river. Patriarch of the Finn family at the docks. Treats strangers like old friends until they give him a reason not to.' },
+            { label: 'Hook',        value: 'The docks sit at the edge of the Veiled Forest\u2019s southern boundary. His family have been seeing strange lights in the tree line at night for two weeks. He thinks it\u2019s marsh gas.' },
+          ],
+          tags: [
+            { label: 'Strange lights', cls: 'tag-gold' },
+            { label: 'Ally',           cls: 'tag-green' },
+          ]
+        },
+        {
+          name: 'Motte',
+          role: 'Otterfolk \u00b7 Fisher \u00b7 Finn\u2019s eldest daughter',
+          rank: ['Fonn Civilian', 'Ally'],
+          fields: [
+            { label: 'Personality', value: 'Serious where her father is cheerful. Takes the river and its moods as a personal responsibility. Doesn\u2019t like things she can\u2019t explain.' },
+            { label: 'Hook',        value: 'Has been mapping the light sightings. Has a rough sketch on sailcloth under the dock counter. The pattern of the lights forms a rough perimeter \u2014 something is marking territory.' },
+          ],
+          gmNote: 'The sailcloth map is a concrete handout opportunity. The perimeter it shows overlaps with where the Veiled Forest paths have been shifting.',
+          tags: [
+            { label: 'Has the map', cls: 'tag-blue' },
+            { label: 'Forest perimeter', cls: 'tag-purple' },
+          ]
+        },
+        {
+          name: 'Aldra',
+          role: 'Dovefolk \u00b7 Merchant',
+          rank: ['Fonn Civilian', 'Neutral'],
+          fields: [
+            { label: 'Personality', value: 'Precise, businesslike, perpetually in a low-grade argument with Wiscon about routes and margins. Not unkind, just focused.' },
+            { label: 'Hook',        value: 'Was at the Apple Cider arguing over a map when the attack happened. The map showed a forest route that no longer works \u2014 the paths have shifted. She wants to know why because it is costing her money.' },
+          ],
+          tags: [
+            { label: 'Forest route problem', cls: 'tag-gold' },
+            { label: 'Apple Cider witness',  cls: 'tag-mid' },
+          ]
+        },
+        {
+          name: 'Wiscon',
+          role: 'Dovefolk \u00b7 Merchant',
+          rank: ['Fonn Civilian', 'Neutral'],
+          fields: [
+            { label: 'Personality', value: 'More relaxed than Aldra, which infuriates her. Believes the forest path issue is temporary. Has been wrong about this for three weeks.' },
+            { label: 'Hook',        value: 'Quietly suspects the path changes are connected to the tower beacon but hasn\u2019t said so because Aldra will turn it into a two-hour argument about magic being bad for trade.' },
+          ],
+          tags: [
+            { label: 'Suspects the beacon', cls: 'tag-purple' },
+            { label: 'Wisely keeps quiet',  cls: 'tag-light' },
+          ]
+        },
+      ]
+    },
+
     /* ── Applecrumb Siblings roster ─────────────────────────────────── */
     {
       type: 'roster',

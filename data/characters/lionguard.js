@@ -81,6 +81,96 @@ Endale.registerPage('characters/lionguard', {
             { label: 'Senne ally',     cls: 'tag-green' },
           ]
         },
+        {
+          name: 'Varro',
+          role: 'Lionkin \u00b7 Senior Guard',
+          rank: ['Lionguard', 'Senior Guard'],
+          fields: [
+            { label: 'Appearance',  value: 'Golden lion. Senior guard \u2014 the one who has seen enough postings to stop being surprised by anything.' },
+            { label: 'Personality', value: 'Says little, sighs often. Has seen too many postings go sideways. Treats silence as the professional default.' },
+            { label: 'Stats',       value: 'HP 7 \u00b7 Armor 2 \u00b7 Atk +2 \u00b7 Eva 11' },
+            { label: 'Hook',        value: 'Hasn\u2019t eaten in two days. Something is wrong with him unrelated to the mission.' },
+          ],
+          tags: [
+            { label: 'Senior guard',    cls: 'tag-mid' },
+            { label: 'Something wrong', cls: 'tag-gold' },
+          ]
+        },
+        {
+          name: 'Maret',
+          role: 'Lionkin \u00b7 Guard',
+          rank: ['Lionguard', 'Guard'],
+          fields: [
+            { label: 'Appearance',  value: 'Dark-maned lioness. Watchful bearing.' },
+            { label: 'Personality', value: 'Sharp, skeptical of the party. Comes around slowly, never admits it.' },
+            { label: 'Stats',       value: 'HP 7 \u00b7 Armor 2 \u00b7 Atk +2 \u00b7 Eva 11' },
+            { label: 'Hook',        value: 'Knows why the guard is split into two silent factions. Part of one side.' },
+          ],
+          tags: [
+            { label: 'Faction tension', cls: 'tag-mid' },
+            { label: 'Skeptical of party', cls: 'tag-light' },
+          ]
+        },
+        {
+          name: 'Solen',
+          role: 'Lionkin \u00b7 Guard (young)',
+          rank: ['Lionguard', 'Guard'],
+          fields: [
+            { label: 'Appearance',  value: 'Pale-maned lion, young. Armour newer than everyone else\u2019s.' },
+            { label: 'Personality', value: 'Eager, asks too many questions, fascinated by everywhere outside the capital.' },
+            { label: 'Stats',       value: 'HP 7 \u00b7 Armor 2 \u00b7 Atk +2 \u00b7 Eva 11' },
+            { label: 'Hook',        value: 'First time this far from home. Hides overwhelm behind enthusiasm.' },
+          ],
+          tags: [
+            { label: 'First posting', cls: 'tag-green' },
+            { label: 'Eager', cls: 'tag-light' },
+          ]
+        },
+        {
+          name: 'Dura',
+          role: 'Lionkin \u00b7 Guard',
+          rank: ['Lionguard', 'Guard'],
+          fields: [
+            { label: 'Appearance',  value: 'Scarred lioness. Former city guard before the Lionguard posting. Moves like someone who counts exits.' },
+            { label: 'Personality', value: 'Quiet, methodical, counts exits in every room.' },
+            { label: 'Stats',       value: 'HP 7 \u00b7 Armor 2 \u00b7 Atk +2 \u00b7 Eva 11' },
+            { label: 'Hook',        value: 'Part of the other faction side from Maret. She and Maret used to be close.' },
+          ],
+          tags: [
+            { label: 'Faction tension', cls: 'tag-mid' },
+            { label: 'Ex-city guard',   cls: 'tag-light' },
+          ]
+        },
+        {
+          name: 'Ran',
+          role: 'Lionkin \u00b7 Guard',
+          rank: ['Lionguard', 'Guard'],
+          fields: [
+            { label: 'Appearance',  value: 'Red-maned lion. First to volunteer, always has a story.' },
+            { label: 'Personality', value: 'Friendly, loud, first to volunteer for watch. Hides anxiety behind helpfulness.' },
+            { label: 'Stats',       value: 'HP 7 \u00b7 Armor 2 \u00b7 Atk +2 \u00b7 Eva 11' },
+            { label: 'Hook',        value: 'Was there the night of Pipkin\u2019s exile. Knows something he hasn\u2019t shared.' },
+          ],
+          tags: [
+            { label: 'Night of the exile', cls: 'tag-purple' },
+            { label: 'Hiding something',   cls: 'tag-gold' },
+          ]
+        },
+        {
+          name: 'Thessaly',
+          role: 'Lionkin \u00b7 Guard',
+          rank: ['Lionguard', 'Guard'],
+          fields: [
+            { label: 'Appearance',  value: 'Grey lioness. Steady, unhurried. Always seems to have food somewhere about her person.' },
+            { label: 'Personality', value: 'Dry humour, deeply practical, always has food. Unofficial morale officer.' },
+            { label: 'Stats',       value: 'HP 7 \u00b7 Armor 2 \u00b7 Atk +2 \u00b7 Eva 11' },
+            { label: 'Hook',        value: 'Managing the Maret/Dura tension. Running out of patience for it.' },
+          ],
+          tags: [
+            { label: 'Morale officer', cls: 'tag-green' },
+            { label: 'Faction mediator', cls: 'tag-mid' },
+          ]
+        },
       ]
     },
     {

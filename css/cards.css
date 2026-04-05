@@ -80,6 +80,15 @@
   flex-shrink: 0;
 }
 
+/* ── Map preview (injected by MapBuilder.attach) ── */
+.map-preview-container {
+  border-bottom: 1px solid var(--border-card);
+  overflow: hidden;
+  line-height: 0;
+}
+.map-preview-container:empty { display: none; }
+.map-preview-container canvas { display: block; }
+
 /* ── Picture placeholder ── */
 .picture-box {
   position: relative;
@@ -390,8 +399,16 @@ td.ref-val {
   font-size: 14px;
   color: var(--text-primary);
   text-align: center;
-  margin: 0 0 22px;
+  margin: 0 0 10px;
   line-height: 1.6;
+}
+.card-delete-modal-sub {
+  font-size: 11px;
+  color: var(--text-body);
+  text-align: center;
+  margin: 0 0 18px;
+  line-height: 1.5;
+  font-style: italic;
 }
 .card-delete-modal-btns {
   display: flex;
@@ -412,6 +429,155 @@ td.ref-val {
 .cdm-no:hover  { color: var(--text-primary); border-color: var(--text-secondary); }
 .cdm-yes { background: #2a0808; border-color: #6a1a1a; color: #f0a0a0; }
 .cdm-yes:hover { background: #4a0a0a; border-color: #9a2020; }
+
+/* ── Illustration picker modal ── */
+.img-picker-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.img-picker-inner {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 5px;
+  width: 520px;
+  max-width: 94vw;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  font-family: Georgia, serif;
+}
+
+.img-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-card-inner);
+  flex-shrink: 0;
+}
+
+.img-picker-title {
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.img-picker-close {
+  background: none;
+  border: none;
+  color: var(--text-label);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 6px;
+}
+.img-picker-close:hover { color: var(--text-primary); }
+
+.img-picker-search {
+  margin: 10px 14px;
+  padding: 7px 10px;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  border: 1px solid var(--border-card);
+  border-radius: 3px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  outline: none;
+  flex-shrink: 0;
+}
+.img-picker-search:focus { border-color: var(--accent); }
+
+.img-picker-grid {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 14px 14px;
+  align-content: flex-start;
+}
+.img-picker-grid::-webkit-scrollbar { width: 4px; }
+.img-picker-grid::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 2px; }
+
+.img-picker-item {
+  width: 100px;
+  border: 1px solid var(--border-card);
+  border-radius: 3px;
+  background: var(--bg-gm-note);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transition: border-color 0.1s, background 0.1s;
+  font-family: Georgia, serif;
+}
+.img-picker-item:hover { border-color: var(--accent); background: var(--bg-input); }
+
+.img-picker-thumb {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 2px;
+  display: block;
+}
+
+.img-picker-label {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.img-picker-empty {
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.img-picker-footer {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-card-inner);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.img-picker-unlink {
+  font-family: Georgia, serif;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border: 1px solid var(--border-accent);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-label);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.img-picker-unlink:hover {
+  background: #2a0808;
+  border-color: #6a1a1a;
+  color: #f0a0a0;
+}
 
 /* ── Side badge ── */
 .side-badge {

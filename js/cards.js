@@ -63,7 +63,7 @@ const Cards = (() => {
     }
 
     return `
-      <div class="card medium collapsible"${delAttrs}>
+      <div class="card medium collapsible"${delAttrs}${entry._imgKey ? ` data-edit-key="${esc(entry._imgKey)}"` : ''}>
         <div class="card-header ${esc(headerClass)}">
           <div>
             <div class="card-name">${esc(entry.name)}</div>
@@ -71,6 +71,7 @@ const Cards = (() => {
           </div>
           <div class="card-rank">${rank}</div>
         </div>
+        ${entry._imgKey ? `<div class="map-preview-container" data-map-key="${esc(entry._imgKey)}"></div>` : ''}
         <div class="picture-box"${entry._imgKey ? ` data-img-key="${esc(entry._imgKey)}" data-card-name="${esc(entry._imgName || entry.name)}"` : ''}>
           ${personIcon()}
           <span class="picture-label">Illustration</span>
@@ -89,8 +90,6 @@ const Cards = (() => {
   function renderRoster(group) {
     const sections = group.sections.map(section => {
       const cols = section.columns;
-
-      const headerRow = cols.map(c => `<th>${esc(c)}</th>`).join('');
 
       const bodyRows = section.rows.map(row => {
         const badge = row.badge
@@ -121,8 +120,16 @@ const Cards = (() => {
 
     const rank = group.rank.map(esc).join('<br>');
 
+    let delAttrs = '';
+    if (group._deleteInfo) {
+      const d = group._deleteInfo;
+      delAttrs = d.type === 'original'
+        ? ` data-delete-type="original" data-delete-key="${esc(d.key)}"`
+        : ` data-delete-type="addition" data-delete-tid="${esc(d.targetPageId)}" data-delete-aid="${esc(d.additionId)}"`;
+    }
+
     return `
-      <div class="card wide roster-card">
+      <div class="card wide roster-card"${delAttrs}>
         <div class="card-header ${esc(group.headerClass)}">
           <div>
             <div class="card-name">${esc(group.title)}</div>
@@ -167,8 +174,16 @@ const Cards = (() => {
       </div>`;
     }).join('');
 
+    let delAttrs = '';
+    if (group._deleteInfo) {
+      const d = group._deleteInfo;
+      delAttrs = d.type === 'original'
+        ? ` data-delete-type="original" data-delete-key="${esc(d.key)}"`
+        : ` data-delete-type="addition" data-delete-tid="${esc(d.targetPageId)}" data-delete-aid="${esc(d.additionId)}"`;
+    }
+
     return `
-      <div class="card wide ref-card">
+      <div class="card wide ref-card"${delAttrs}>
         <div class="card-header ${esc(group.headerClass)}">
           <div>
             <div class="card-name">${esc(group.title)}</div>
@@ -218,6 +233,6 @@ const Cards = (() => {
     });
   }
 
-  return { renderPage, renderCardHTML: renderCard, renderRosterHTML: renderRoster, renderReferenceHTML: renderReference };
+  return { renderPage, renderCardHTML: renderCard, renderRosterHTML: renderRoster, renderReferenceHTML: renderReference, attachToggle };
 
 })();

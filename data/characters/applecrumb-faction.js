@@ -75,6 +75,48 @@ Endale.registerPage('characters/applecrumb-faction', {
             { label: 'Tactical coordinator', cls: 'tag-mid' },
           ]
         },
+        {
+          name: 'Berry Applecrumb (loud)',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Apple Cider attacker',
+          rank: ['Applecrumb Faction', 'Hostile / Lying low'],
+          fields: [
+            { label: 'Personality', value: 'All bravado, follows Nessa\u2019s lead without much independent thought.' },
+            { label: 'Stats',       value: 'HP 5 \u00b7 Armor 1 \u00b7 Atk +1' },
+            { label: 'Status',      value: 'Was at Apple Cider. Failed. Lying low at Biggus\u2019s command.' },
+          ],
+          tags: [
+            { label: 'Apple Cider failure', cls: 'tag-mid' },
+            { label: 'Nessa\u2019s follower',    cls: 'tag-dark' },
+          ]
+        },
+        {
+          name: 'Berry Applecrumb (quiet)',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Apple Cider attacker',
+          rank: ['Applecrumb Faction', 'Hostile / Wavering'],
+          fields: [
+            { label: 'Personality', value: 'More careful than the loud Berry. Goes along out of habit more than conviction.' },
+            { label: 'Stats',       value: 'HP 5 \u00b7 Armor 1 \u00b7 Atk +1' },
+            { label: 'Status',      value: 'Was at Apple Cider. Failed. Privately not sure this is worth it anymore but has no idea how to say that.' },
+          ],
+          tags: [
+            { label: 'Apple Cider failure', cls: 'tag-mid' },
+            { label: 'Wavering',            cls: 'tag-gold' },
+          ]
+        },
+        {
+          name: 'Clide Applecrumb',
+          role: 'Mousekin \u00b7 Uncle \u00b7 Early Biggus loyalist',
+          rank: ['Applecrumb Faction', 'Hostile'],
+          fields: [
+            { label: 'Personality', value: 'Older, harder, genuinely loyal to Biggus from the early days. Not a fanatic \u2014 just someone who made a choice a long time ago and has stopped questioning it.' },
+            { label: 'Stats',       value: 'HP 8 \u00b7 Armor 2 \u00b7 Atk +2' },
+            { label: 'Status',      value: 'Was at Apple Cider. Failed. The most experienced of the three; his failure stings the most because he knew better.' },
+          ],
+          tags: [
+            { label: 'Apple Cider failure', cls: 'tag-mid' },
+            { label: 'Old guard loyalist',  cls: 'tag-dark' },
+          ]
+        },
       ]
     },
     {

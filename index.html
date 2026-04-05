@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/cards.css">
   <link rel="stylesheet" href="css/board.css">
   <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/mapbuilder.css">
 </head>
 <body>
 
@@ -18,11 +19,13 @@
       <div class="site-title">Endale</div>
       <div class="site-tagline">Daggerheart Campaign</div>
     </div>
-    <div id="active-manager"></div>
+    <div id="core-nav"></div>
+    <div class="nav-sep-label">Reference</div>
+    <div id="ref-nav"></div>
+    <div class="nav-sep-label nav-sep-label-groups">Card Groups</div>
     <div id="nav-tree"></div>
     <div id="sidebar-footer">
-      <button id="nav-styles-btn" class="sidebar-footer-btn">Styles</button>
-      <button id="nav-add-section-btn" class="sidebar-footer-btn">+ Section</button>
+      <button id="nav-add-section-btn" class="sidebar-footer-btn">+ Group</button>
       <button id="nav-edit-btn" class="sidebar-footer-btn">Edit</button>
     </div>
   </nav>
@@ -37,9 +40,27 @@
 
 </div>
 
+<!-- ── Card creation wizard (shared across all pages) ── -->
+<div id="card-wizard" class="board-modal hidden">
+  <div class="board-wizard-inner">
+    <div class="board-modal-header">
+      <span class="board-modal-title">New Card</span>
+      <div class="wiz-steps">
+        <span id="wiz-step-1" class="wiz-step active">1</span>
+        <span class="wiz-step-line"></span>
+        <span id="wiz-step-2" class="wiz-step">2</span>
+      </div>
+      <button id="card-wizard-close" class="board-modal-close-btn">✕</button>
+    </div>
+    <div id="card-wizard-body" class="board-wizard-body"></div>
+  </div>
+</div>
+
 <!-- ── App ── -->
 <script src="js/themes.js"></script>
 <script src="js/cards.js"></script>
+<script src="js/mapbuilder.js"></script>
+<script src="js/art-manifest.js"></script>
 <script src="js/images.js"></script>
 <script src="js/board.js"></script>
 <script src="js/app.js"></script>
@@ -57,6 +78,7 @@
 <!-- Story -->
 <script src="data/story/threads.js"></script>
 <!-- Sessions -->
+<script src="data/sessions/recap.js"></script>
 <script src="data/sessions/log.js"></script>
 <script src="data/sessions/board.js"></script>
 <!-- World -->

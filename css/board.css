@@ -414,13 +414,13 @@
 
 .wiz-type-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
   margin-bottom: 4px;
 }
 
 .wiz-type-btn {
-  padding: 14px 12px;
+  padding: 12px 10px;
   border: 1px solid var(--border-card);
   border-radius: 4px;
   background: var(--bg-input);
@@ -436,9 +436,17 @@
 
 .wiz-type-name {
   display: block;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
   color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.wiz-type-desc {
+  display: block;
+  font-size: 10px;
+  color: var(--text-label);
+  line-height: 1.35;
 }
 
 /* ── Step 2: form ── */
@@ -507,6 +515,68 @@
 }
 .wiz-color:hover   { transform: scale(1.15); }
 .wiz-color.selected { border-color: #f0ebe3; outline: 2px solid #1a1a1a; }
+
+/* Select field */
+.wiz-select {
+  padding: 7px 10px;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  border: 1px solid var(--border-card);
+  border-radius: 3px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+}
+.wiz-select:focus { border-color: var(--accent); }
+
+/* Roster: dynamic member rows */
+.wiz-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.wiz-member-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 5px;
+  align-items: center;
+}
+.wiz-member-row .wiz-input { padding: 5px 8px; font-size: 11px; }
+
+.wiz-member-remove {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-label);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, color 0.1s;
+}
+.wiz-member-remove:hover { background: #3a1010; color: #f0a0a0; }
+
+.wiz-add-member-btn {
+  font-family: Georgia, serif;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border-accent);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  align-self: flex-start;
+  transition: color 0.1s, border-color 0.1s;
+}
+.wiz-add-member-btn:hover { color: var(--text-primary); border-color: var(--accent); }
 
 /* Wizard footer */
 .wiz-footer {

@@ -16,15 +16,6 @@ const Board = (() => {
   const SCALE_MIN     = 0.15;
   const SCALE_MAX     = 2.0;
 
-  /* ── Card type definitions (for creation wizard) ── */
-  const CARD_TYPES = [
-    { id: 'npc',      label: 'Character / NPC', header: 'h-neutral', rank: 'Session NPC'      },
-    { id: 'location', label: 'Location',         header: 'h-town',    rank: 'Session Location'  },
-    { id: 'faction',  label: 'Faction',           header: 'h-faction', rank: 'Session Faction'   },
-    { id: 'item',     label: 'Lore / Item',       header: 'h-amber',   rank: 'Session Item'      },
-    { id: 'note',     label: 'Note',              header: 'h-neutral', rank: 'Session Note'      },
-  ];
-
   /* ── View + DOM state ── */
   let _canvas          = null;
   let _viewport        = null;
@@ -35,18 +26,52 @@ const Board = (() => {
   let _ty              = 0;
   let _scale           = 1;
 
-  /* ── Wizard state ── */
-  let _wizPos    = null;
-  let _wizType   = null;
-  let _wizHeader = null;
+  /* ── Wizard drop position (board-only: where to place the new pin) ── */
+  let _wizPos = null;
 
   /* ════════════════════════════════════════════
      PERSISTENCE
   ════════════════════════════════════════════ */
 
+  /* Local read of the custom card store (avoids tight coupling to app.js) */
+  function loadCustomCardById(customId) {
+    try {
+      const cards = JSON.parse(localStorage.getItem('endale-custom-cards')) || [];
+      return cards.find(c => c._customId === customId) || null;
+    } catch { return null; }
+  }
+
   function loadState() {
-    try   { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { pins: [] }; }
+    try {
+      const state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { pins: [] };
+      return migrateState(state);
+    }
     catch { return { pins: [] }; }
+  }
+
+  /* One-time migration: old custom pins embedded full cardData — strip it, ensure store has the card */
+  function migrateState(state) {
+    let dirty = false;
+    state.pins = state.pins.map(p => {
+      if (p.isCustom && p.cardData && !p._customId) {
+        const customId = p.id;
+        if (!loadCustomCardById(customId)) {
+          Endale.saveCustomCard({ ...p.cardData, _customId: customId });
+        }
+        dirty = true;
+        return { id: p.id, isCustom: true, _customId: customId, x: p.x, y: p.y };
+      }
+      /* Also handle pins that have both cardData AND _customId (partial old format) */
+      if (p.isCustom && p.cardData && p._customId) {
+        dirty = true;
+        const { cardData, ...rest } = p; // eslint-disable-line no-unused-vars
+        if (!loadCustomCardById(p._customId)) Endale.saveCustomCard({ ...cardData, _customId: p._customId });
+        return rest;
+      }
+      return p;
+    });
+    if (dirty) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return state;
   }
 
   function saveState() {
@@ -100,12 +125,15 @@ const Board = (() => {
 
   function getAllCardEntries() {
     const pages = Endale.getPages();
+    let hidden = {};
+    try { hidden = JSON.parse(localStorage.getItem('endale-hidden')) || {}; } catch {}
     const result = [];
     for (const [pageId, pageData] of Object.entries(pages)) {
       if (!pageData.groups) continue;
       pageData.groups.forEach((group, gi) => {
         if (group.type === 'cards') {
           group.entries.forEach((entry, ei) => {
+            if (hidden[`${pageId}|${gi}|${ei}`]) return;
             result.push({ pageId, gi, ei, groupType: 'cards',
               name: entry.name, role: entry.role || '' });
           });
@@ -123,7 +151,10 @@ const Board = (() => {
   ════════════════════════════════════════════ */
 
   function resolvePin(pin) {
-    if (pin.isCustom) return { isCustom: true };
+    if (pin.isCustom) {
+      const card = loadCustomCardById(pin._customId);
+      return card ? { isCustom: true, card } : null;
+    }
     const pages = Endale.getPages();
     const pageData = pages[pin.pageId];
     if (!pageData || !pageData.groups) return null;
@@ -173,7 +204,7 @@ const Board = (() => {
     container.innerHTML = `
       <div class="board-toolbar">
         <button id="board-add-btn" class="board-btn board-btn-add">＋ Add Card</button>
-        <span class="board-hint">Scroll to zoom · drag background to pan · double-click canvas to create · double-click card body to edit</span>
+        <span class="board-hint">Scroll to zoom · drag background to pan · double-click canvas to create · double-click card body to edit in place</span>
         <div class="board-zoom-controls">
           <button id="board-zoom-out"   class="board-zoom-btn" title="Zoom out">−</button>
           <span   id="board-zoom-pct"   class="board-zoom-pct">100%</span>
@@ -201,21 +232,7 @@ const Board = (() => {
         </div>
       </div>
 
-      <!-- Creation wizard -->
-      <div id="board-wizard" class="board-modal hidden">
-        <div class="board-wizard-inner">
-          <div class="board-modal-header">
-            <span class="board-modal-title">New Card</span>
-            <div class="wiz-steps">
-              <span id="wiz-step-1" class="wiz-step active">1</span>
-              <span class="wiz-step-line"></span>
-              <span id="wiz-step-2" class="wiz-step">2</span>
-            </div>
-            <button id="board-wizard-close" class="board-modal-close-btn">✕</button>
-          </div>
-          <div id="board-wizard-body" class="board-wizard-body"></div>
-        </div>
-      </div>`;
+      `;
 
     _canvas   = document.getElementById('board-canvas');
     _viewport = document.getElementById('board-viewport');
@@ -246,12 +263,6 @@ const Board = (() => {
     });
     document.getElementById('board-search').addEventListener('input', e =>
       populateModalList(e.target.value.trim().toLowerCase()));
-
-    /* Wizard */
-    document.getElementById('board-wizard-close').addEventListener('click', closeWizard);
-    document.getElementById('board-wizard').addEventListener('click', e => {
-      if (e.target.id === 'board-wizard') closeWizard();
-    });
 
     initZoomPan();
   }
@@ -317,16 +328,18 @@ const Board = (() => {
     let cardHTML;
 
     if (pin.isCustom) {
-      const d = pin.cardData;
+      const resolved = resolvePin(pin);
+      if (!resolved) return; /* card was deleted from store */
+      const d = resolved.card;
       cardHTML = Cards.renderCardHTML({
         name:    d.name,
         role:    d.role   || '',
-        rank:    [d.rank  || 'Session Card', ''],
+        rank:    [d.rank  || 'Custom', ''],
         fields:  d.fields || [],
         gmNote:  d.gmNote || '',
         quote:   d.quote  || '',
         tags:    d.tags   || [],
-        _imgKey:  `custom|${pin.id}`,
+        _imgKey:  `custom|${pin._customId}`,
         _imgName: d.name,
       }, d.headerClass || 'h-neutral');
     } else {
@@ -388,7 +401,7 @@ const Board = (() => {
      image key and override key — edits and art stay in sync.
      Custom cards store a data copy (they have no stable identity). */
   function extractCardData(pin) {
-    if (pin.isCustom) return { ...pin.cardData };
+    if (pin.isCustom) return { _customId: pin._customId };
 
     if (pin.groupType === 'cards') {
       /* Reference: resolved live in enrichPage using original key */
@@ -641,13 +654,16 @@ const Board = (() => {
     const gmNoteText = gmNoteEl ? gmNoteEl.textContent.trim() : null;
 
     if (pin.isCustom) {
-      /* Update inline cardData and persist in board state */
-      pin.cardData.fields.forEach((f, i) => {
+      /* Write edits directly to the single custom card store */
+      const card = loadCustomCardById(pin._customId);
+      if (!card) { exitEditMode(pinEl); return; }
+      card.fields.forEach((f, i) => {
         if (fieldValues[i] !== undefined) f.value = fieldValues[i];
       });
-      if (quoteText  !== null) pin.cardData.quote  = quoteText;
-      if (gmNoteText !== null) pin.cardData.gmNote = gmNoteText;
-      saveState();
+      if (quoteText  !== null) card.quote  = quoteText;
+      if (gmNoteText !== null) card.gmNote = gmNoteText;
+      Endale.saveCustomCard(card);
+      syncCustomPins(pin._customId, card, pinEl);
     } else {
       /* Build override from original entry + edits */
       const resolved = resolvePin(pin);
@@ -670,6 +686,22 @@ const Board = (() => {
     }
 
     exitEditMode(pinEl);
+  }
+
+  /* Sync all board pins referencing the same custom card after a store write */
+  function syncCustomPins(customId, card, skipEl) {
+    _canvas.querySelectorAll('.board-pin').forEach(el => {
+      if (el === skipEl || el.classList.contains('editing')) return;
+      const pin = _state.pins.find(p => p.id === el.dataset.pinId);
+      if (!pin || !pin.isCustom || pin._customId !== customId) return;
+      el.querySelectorAll('.field-value').forEach((fv, i) => {
+        if (card.fields[i] !== undefined) fv.textContent = card.fields[i].value;
+      });
+      const q   = el.querySelector('.quote');
+      const gnt = el.querySelector('.gm-note-text');
+      if (q   && card.quote  !== undefined) q.textContent   = card.quote;
+      if (gnt && card.gmNote !== undefined) gnt.textContent = card.gmNote;
+    });
   }
 
   /* Update sibling pins of the same wiki entry without a full re-render */
@@ -758,155 +790,24 @@ const Board = (() => {
   }
 
   /* ════════════════════════════════════════════
-     CREATION WIZARD
+     CREATION WIZARD — delegated to Endale.openCardWizard
   ════════════════════════════════════════════ */
 
   function openWizard(canvasX, canvasY) {
-    _wizPos    = { x: canvasX, y: canvasY };
-    _wizType   = null;
-    _wizHeader = null;
-    document.getElementById('board-wizard').classList.remove('hidden');
-    showWizardStep1();
-  }
-
-  function closeWizard() {
-    document.getElementById('board-wizard').classList.add('hidden');
-  }
-
-  function setWizardStepIndicator(step) {
-    document.getElementById('wiz-step-1').classList.toggle('active', step === 1);
-    document.getElementById('wiz-step-2').classList.toggle('active', step === 2);
-  }
-
-  function showWizardStep1() {
-    setWizardStepIndicator(1);
-    const body = document.getElementById('board-wizard-body');
-
-    body.innerHTML = `
-      <p class="wiz-label">What kind of card?</p>
-      <div class="wiz-type-grid">
-        ${CARD_TYPES.map(t => `
-          <button class="wiz-type-btn" data-type="${esc(t.id)}">
-            <span class="wiz-type-name">${esc(t.label)}</span>
-          </button>`).join('')}
-      </div>
-      <div class="wiz-footer">
-        <span class="wiz-hint-small">or press Escape to cancel</span>
-      </div>`;
-
-    body.querySelectorAll('.wiz-type-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        _wizType   = CARD_TYPES.find(t => t.id === btn.dataset.type);
-        _wizHeader = _wizType.header;
-        showWizardStep2();
-      });
+    _wizPos = { x: canvasX, y: canvasY };
+    Endale.openCardWizard(cardData => {
+      const pinId = cardData._customId;
+      const pin = {
+        id:        pinId,
+        isCustom:  true,
+        _customId: pinId,
+        x:         Math.max(0, _wizPos.x - 170),
+        y:         Math.max(0, _wizPos.y - 40),
+      };
+      _state.pins.push(pin);
+      saveState();
+      renderPin(pin);
     });
-  }
-
-  const HEADER_CLASSES = ['h-feather','h-apple','h-hostile','h-town','h-guard','h-faction','h-neutral','h-amber'];
-
-  function showWizardStep2() {
-    setWizardStepIndicator(2);
-    const body = document.getElementById('board-wizard-body');
-
-    body.innerHTML = `
-      <div class="wiz-form">
-        <div class="wiz-row">
-          <label class="wiz-field-label">Name <span class="wiz-required">*</span></label>
-          <input id="wiz-name" class="wiz-input" type="text"
-                 placeholder="Card name" autocomplete="off">
-        </div>
-        <div class="wiz-row">
-          <label class="wiz-field-label">Role</label>
-          <input id="wiz-role" class="wiz-input" type="text"
-                 placeholder="e.g. Guard Captain, Market Square">
-        </div>
-        <div class="wiz-row">
-          <label class="wiz-field-label">Description</label>
-          <textarea id="wiz-desc" class="wiz-textarea" rows="3"
-                    placeholder="Appearance, key details…"></textarea>
-        </div>
-        <div class="wiz-row">
-          <label class="wiz-field-label">GM Note</label>
-          <textarea id="wiz-gmnote" class="wiz-textarea" rows="2"
-                    placeholder="Hidden notes…"></textarea>
-        </div>
-        <div class="wiz-row">
-          <label class="wiz-field-label">Tags <span class="wiz-hint-small">(comma-separated)</span></label>
-          <input id="wiz-tags" class="wiz-input" type="text"
-                 placeholder="e.g. hostile, unknown, merchant">
-        </div>
-        <div class="wiz-row">
-          <label class="wiz-field-label">Header Colour</label>
-          <div class="wiz-colors">
-            ${HEADER_CLASSES.map(cls => `
-              <button class="wiz-color ${cls}${cls === _wizHeader ? ' selected' : ''}"
-                      data-cls="${cls}" title="${cls}"></button>`).join('')}
-          </div>
-        </div>
-      </div>
-      <div class="wiz-footer">
-        <button id="wiz-back"   class="board-btn">← Back</button>
-        <button id="wiz-create" class="board-btn board-btn-add">Create &amp; Pin</button>
-      </div>`;
-
-    setTimeout(() => document.getElementById('wiz-name').focus(), 50);
-
-    body.querySelectorAll('.wiz-color').forEach(btn => {
-      btn.addEventListener('click', () => {
-        body.querySelectorAll('.wiz-color').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        _wizHeader = btn.dataset.cls;
-      });
-    });
-
-    document.getElementById('wiz-back').addEventListener('click', showWizardStep1);
-    document.getElementById('wiz-create').addEventListener('click', finishCreate);
-
-    body.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') finishCreate();
-    });
-  }
-
-  function finishCreate() {
-    const nameEl = document.getElementById('wiz-name');
-    const name   = nameEl.value.trim();
-    if (!name) {
-      nameEl.focus();
-      nameEl.classList.add('wiz-input-error');
-      return;
-    }
-
-    const role   = document.getElementById('wiz-role').value.trim();
-    const desc   = document.getElementById('wiz-desc').value.trim();
-    const gmNote = document.getElementById('wiz-gmnote').value.trim();
-    const tagRaw = document.getElementById('wiz-tags').value.trim();
-
-    const tags   = tagRaw
-      ? tagRaw.split(',').map(t => t.trim()).filter(Boolean).map(t => ({ label: t, cls: 'tag-light' }))
-      : [];
-
-    const pin = {
-      id:       uid(),
-      isCustom: true,
-      x:        Math.max(0, _wizPos.x - 170),
-      y:        Math.max(0, _wizPos.y - 40),
-      cardData: {
-        name,
-        role,
-        rank:        _wizType.rank,
-        headerClass: _wizHeader || _wizType.header,
-        fields:      desc ? [{ label: 'Description', value: desc }] : [],
-        gmNote,
-        quote:       '',
-        tags,
-      },
-    };
-
-    _state.pins.push(pin);
-    saveState();
-    renderPin(pin);
-    closeWizard();
   }
 
   /* ════════════════════════════════════════════

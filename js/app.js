@@ -5,11 +5,28 @@
 
 const Endale = (() => {
 
-  const NAV_KEY       = 'endale-nav';
-  const ADDITIONS_KEY = 'endale-additions';
-  const HIDDEN_KEY    = 'endale-hidden';
+  const NAV_KEY          = 'endale-nav';
+  const ADDITIONS_KEY    = 'endale-additions';
+  const HIDDEN_KEY       = 'endale-hidden';
+  const CUSTOM_CARDS_KEY = 'endale-custom-cards';
   const ACTIVE_PAGE   = 'sessions/board';
+  const MAP_PAGE      = 'map-builder';
+  const CATALOGUE_PAGE = 'catalogue';
   const DEFAULT_PAGE  = 'characters/player-characters';
+
+  /* ── Core nav — tools (locked) ── */
+  const CORE_NAV = [
+    { id: ACTIVE_PAGE,   icon: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="display:inline-block;vertical-align:middle"><circle cx="6" cy="3.5" r="2.4" fill="currentColor"/><path d="M1 11.5c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>', label: 'Active Manager' },
+    { id: MAP_PAGE,      icon: '⊞', label: 'Map Builder' },
+  ];
+
+  /* ── Reference nav — quick-access pages (locked) ── */
+  const REF_NAV = [
+    { id: 'rules/dm-cheatsheet', label: 'DM Cheatsheet'   },
+    { id: 'sessions/recap',      label: 'Session Recap'   },
+    { id: 'story/threads',       label: 'Story Threads'   },
+    { id: CATALOGUE_PAGE,        label: 'Full Catalogue'  },
+  ];
 
   /* ── Page registry ── */
 
@@ -19,11 +36,10 @@ const Endale = (() => {
     _pages[id] = data;
   }
 
-  /* ── Default nav structure
-     sessions/board lives in Active Manager — not listed here. ── */
+  /* ── Card Groups nav — user-editable page links ── */
 
   const NAV_DEFAULT = [
-    { id: 'characters', label: 'Characters', children: [
+    { id: 'characters', label: 'Characters', _open: true, children: [
       { id: 'characters/player-characters',  label: 'Player Characters' },
       { id: 'characters/key-individuals',    label: 'Key Individuals' },
       { id: 'characters/lionguard',          label: 'Lionguard' },
@@ -31,24 +47,10 @@ const Endale = (() => {
       { id: 'characters/ratkin',             label: 'Ratkin Crew' },
       { id: 'characters/fonn-civilians',     label: 'Fonn Civilians' },
     ]},
-    { id: 'locations', label: 'Locations', children: [
-      { id: 'locations/fonn', label: 'Fonn' },
-    ]},
-    { id: 'factions',  label: 'Factions',  children: [] },
-    { id: 'story',     label: 'Story',     children: [
-      { id: 'story/threads', label: 'Story Threads' },
-    ]},
-    { id: 'sessions',  label: 'Sessions',  children: [
-      { id: 'sessions/log', label: 'Session Log' },
-    ]},
-    { id: 'world',     label: 'World',     children: [
-      { id: 'world/overview', label: 'World Overview' },
-    ]},
-    { id: 'lore',      label: 'Lore',      children: [
-      { id: 'lore/items', label: 'Items of Note' },
-    ]},
-    { id: 'rules',     label: 'Rules',     children: [
-      { id: 'rules/dm-cheatsheet', label: 'DM Cheatsheet' },
+    { id: 'world', label: 'World', children: [
+      { id: 'locations/fonn',  label: 'Fonn' },
+      { id: 'world/overview',  label: 'World Overview' },
+      { id: 'lore/items',      label: 'Items of Note' },
     ]},
   ];
 
@@ -90,8 +92,346 @@ const Endale = (() => {
     localStorage.setItem(HIDDEN_KEY, JSON.stringify(hidden));
   }
 
+  /* ── Custom card store — cards created via Active Manager wizard ── */
+
+  function loadCustomCards() {
+    try { return JSON.parse(localStorage.getItem(CUSTOM_CARDS_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveCustomCard(cardData) {
+    const cards = loadCustomCards();
+    const idx   = cards.findIndex(c => c._customId === cardData._customId);
+    if (idx >= 0) cards[idx] = cardData;
+    else          cards.push(cardData);
+    localStorage.setItem(CUSTOM_CARDS_KEY, JSON.stringify(cards));
+  }
+
+  function deleteCustomCard(customId) {
+    /* Remove from custom card store */
+    const cards = loadCustomCards().filter(c => c._customId !== customId);
+    localStorage.setItem(CUSTOM_CARDS_KEY, JSON.stringify(cards));
+
+    /* Remove all addition refs that originated from this custom card */
+    const additions = loadAdditions();
+    let changed = false;
+    for (const [pageId, arr] of Object.entries(additions)) {
+      const filtered = arr.filter(a => a._customId !== customId);
+      if (filtered.length !== arr.length) { additions[pageId] = filtered; changed = true; }
+    }
+    if (changed) saveAdditions(additions);
+
+    /* Remove matching pins from endale-board */
+    try {
+      const board = JSON.parse(localStorage.getItem('endale-board') || '{}');
+      if (board.pins) {
+        board.pins = board.pins.filter(p => p._customId !== customId);
+        localStorage.setItem('endale-board', JSON.stringify(board));
+      }
+    } catch { /* ignore */ }
+  }
+
+  function deleteWikiCard(pageId, gi, ei) {
+    /* Hide the original entry */
+    const hidden = loadHidden();
+    hidden[`${pageId}|${gi}|${ei}`] = true;
+    saveHidden(hidden);
+
+    /* Remove any addition refs pointing at this exact entry */
+    const additions = loadAdditions();
+    let changed = false;
+    for (const [pid, arr] of Object.entries(additions)) {
+      const filtered = arr.filter(
+        a => !(a._ref && a._refPageId === pageId && a._refGi === gi && a._refEi === ei)
+      );
+      if (filtered.length !== arr.length) { additions[pid] = filtered; changed = true; }
+    }
+    if (changed) saveAdditions(additions);
+  }
+
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  /* ════════════════════════════════════════════
+     CARD CREATION WIZARD — shared across all pages
+  ════════════════════════════════════════════ */
+
+  const CARD_TYPES = [
+    {
+      id: 'character', label: 'Character', desc: 'Individual NPC or player character',
+      header: 'h-neutral', rank: 'Character',
+      typeFields: [
+        { id: 'race',         label: 'Race / Class',   type: 'text',     ph: 'e.g. Human Rogue, Foxkin Mage' },
+        { id: 'motivation',   label: 'Motivation',     type: 'text',     ph: 'What drives them' },
+        { id: 'relationship', label: 'Relationship',   type: 'text',     ph: 'Relation to the party' },
+      ],
+    },
+    {
+      id: 'roster', label: 'Multiple Characters', desc: 'A named group of people',
+      header: 'h-guard', rank: 'Roster',
+      typeFields: [],
+    },
+    {
+      id: 'location', label: 'Location', desc: 'A place, building, or region',
+      header: 'h-town', rank: 'Location',
+      typeFields: [
+        { id: 'atmosphere', label: 'Atmosphere',         type: 'textarea', ph: 'Mood, sights, smells…', rows: 2 },
+        { id: 'npcs',       label: 'NPCs Present',       type: 'text',     ph: 'Who is here' },
+        { id: 'poi',        label: 'Points of Interest', type: 'textarea', ph: 'Notable features, exits…', rows: 2 },
+      ],
+    },
+    {
+      id: 'lore', label: 'Lore / Story', desc: 'World detail, faction, or story note',
+      header: 'h-faction', rank: 'Lore',
+      typeFields: [
+        { id: 'category', label: 'Category', type: 'select',
+          options: ['World Lore', 'Faction', 'History', 'Story Thread', 'Misc'] },
+        { id: 'summary',  label: 'Summary',  type: 'textarea', ph: 'Key facts…', rows: 3 },
+      ],
+    },
+    {
+      id: 'poi', label: 'Point of Interest', desc: 'Puzzle, encounter, trap, or secret',
+      header: 'h-hostile', rank: 'POI',
+      typeFields: [
+        { id: 'poi-type',  label: 'Type',      type: 'select',
+          options: ['Puzzle', 'Encounter', 'Trap', 'Secret', 'Treasure', 'Other'] },
+        { id: 'setup',     label: 'Setup',     type: 'textarea', ph: 'What the players see…', rows: 2 },
+        { id: 'mechanics', label: 'Mechanics', type: 'textarea', ph: 'How it works…', rows: 2 },
+      ],
+    },
+    {
+      id: 'item', label: 'Item', desc: 'Weapon, artifact, or notable object',
+      header: 'h-amber', rank: 'Item',
+      typeFields: [
+        { id: 'item-type',  label: 'Type',       type: 'text',     ph: 'e.g. Weapon, Artifact, Key' },
+        { id: 'properties', label: 'Properties', type: 'textarea', ph: 'Description, appearance…', rows: 2 },
+        { id: 'effect',     label: 'Effect',     type: 'text',     ph: 'Mechanical effect or ability' },
+        { id: 'origin',     label: 'Origin',     type: 'text',     ph: 'Where it came from' },
+      ],
+    },
+  ];
+
+  const HEADER_CLASSES = ['h-feather','h-apple','h-hostile','h-town','h-guard','h-faction','h-neutral','h-amber'];
+
+  let _wizType     = null;
+  let _wizHeader   = null;
+  let _wizOnCreated = null; /* callback(cardData) */
+
+  function _wizEsc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function _buildFieldRowHTML(f) {
+    if (f.type === 'select') {
+      return `<div class="wiz-row">
+        <label class="wiz-field-label">${_wizEsc(f.label)}</label>
+        <select id="wiz-field-${_wizEsc(f.id)}" class="wiz-select">
+          ${f.options.map(o => `<option value="${_wizEsc(o)}">${_wizEsc(o)}</option>`).join('')}
+        </select></div>`;
+    }
+    if (f.type === 'textarea') {
+      return `<div class="wiz-row">
+        <label class="wiz-field-label">${_wizEsc(f.label)}</label>
+        <textarea id="wiz-field-${_wizEsc(f.id)}" class="wiz-textarea"
+                  rows="${f.rows || 2}" placeholder="${_wizEsc(f.ph || '')}"></textarea></div>`;
+    }
+    return `<div class="wiz-row">
+      <label class="wiz-field-label">${_wizEsc(f.label)}</label>
+      <input id="wiz-field-${_wizEsc(f.id)}" class="wiz-input" type="text"
+             placeholder="${_wizEsc(f.ph || '')}"></div>`;
+  }
+
+  function _addMemberRow(container) {
+    const row = document.createElement('div');
+    row.className = 'wiz-member-row';
+    row.innerHTML =
+      `<input class="wiz-input wiz-member-name"  type="text" placeholder="Name" autocomplete="off">` +
+      `<input class="wiz-input wiz-member-notes" type="text" placeholder="Role or notes">` +
+      `<button class="wiz-member-remove" title="Remove">✕</button>`;
+    row.querySelector('.wiz-member-remove').addEventListener('click', () => {
+      if (container.children.length > 1) row.remove();
+    });
+    container.appendChild(row);
+  }
+
+  function _setWizardStep(step) {
+    document.getElementById('wiz-step-1').classList.toggle('active', step === 1);
+    document.getElementById('wiz-step-2').classList.toggle('active', step === 2);
+  }
+
+  function _showWizardStep1() {
+    _setWizardStep(1);
+    const body = document.getElementById('card-wizard-body');
+    body.innerHTML = `
+      <p class="wiz-label">What kind of card?</p>
+      <div class="wiz-type-grid">
+        ${CARD_TYPES.map(t => `
+          <button class="wiz-type-btn" data-type="${_wizEsc(t.id)}">
+            <span class="wiz-type-name">${_wizEsc(t.label)}</span>
+            <span class="wiz-type-desc">${_wizEsc(t.desc)}</span>
+          </button>`).join('')}
+      </div>
+      <div class="wiz-footer">
+        <span class="wiz-hint-small">Double-click anywhere on the page · Escape to cancel</span>
+      </div>`;
+    body.querySelectorAll('.wiz-type-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        _wizType   = CARD_TYPES.find(t => t.id === btn.dataset.type);
+        _wizHeader = _wizType.header;
+        _showWizardStep2();
+      });
+    });
+  }
+
+  function _showWizardStep2() {
+    _setWizardStep(2);
+    const body = document.getElementById('card-wizard-body');
+    const t    = _wizType;
+
+    const namePh = t.id === 'roster' ? 'Group name' : 'Card name';
+    const rolePh = {
+      character: 'e.g. Guard Captain, Elder',
+      roster:    'e.g. City Guard, Merchant Guild',
+      location:  'e.g. Tavern, Market, Forest',
+      lore:      'e.g. The Compact, Applecrumb Faction',
+      poi:       'e.g. Room 4, The Iron Door',
+      item:      'e.g. Cursed Blade, Quest Item',
+    }[t.id] || 'Role or subtitle';
+
+    const typeRowsHTML = t.id === 'roster'
+      ? `<div class="wiz-row">
+           <label class="wiz-field-label">Members</label>
+           <div id="wiz-members" class="wiz-member-list"></div>
+           <button type="button" id="wiz-add-member" class="wiz-add-member-btn">+ Add Member</button>
+         </div>`
+      : t.typeFields.map(_buildFieldRowHTML).join('');
+
+    body.innerHTML = `
+      <div class="wiz-form">
+        <div class="wiz-row">
+          <label class="wiz-field-label">Name <span class="wiz-required">*</span></label>
+          <input id="wiz-name" class="wiz-input" type="text"
+                 placeholder="${_wizEsc(namePh)}" autocomplete="off">
+        </div>
+        <div class="wiz-row">
+          <label class="wiz-field-label">Role <span class="wiz-hint-small">— appears under the name</span></label>
+          <input id="wiz-role" class="wiz-input" type="text" placeholder="${_wizEsc(rolePh)}">
+        </div>
+        ${typeRowsHTML}
+        <div class="wiz-row">
+          <label class="wiz-field-label">GM Note <span class="wiz-hint-small">— hidden context</span></label>
+          <textarea id="wiz-gmnote" class="wiz-textarea" rows="2" placeholder="Secret info…"></textarea>
+        </div>
+        <div class="wiz-row">
+          <label class="wiz-field-label">Tags <span class="wiz-hint-small">— comma separated</span></label>
+          <input id="wiz-tags" class="wiz-input" type="text"
+                 placeholder="e.g. hostile, important, unresolved">
+        </div>
+        <div class="wiz-row">
+          <label class="wiz-field-label">Header Colour</label>
+          <div class="wiz-colors">
+            ${HEADER_CLASSES.map(cls => `
+              <button class="wiz-color ${cls}${cls === _wizHeader ? ' selected' : ''}"
+                      data-cls="${cls}" title="${cls}"></button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="wiz-footer">
+        <button id="wiz-back"   class="board-btn">← Back</button>
+        <button id="wiz-create" class="board-btn board-btn-add">Create Card</button>
+      </div>`;
+
+    setTimeout(() => document.getElementById('wiz-name').focus(), 50);
+
+    if (t.id === 'roster') {
+      const membersEl = document.getElementById('wiz-members');
+      _addMemberRow(membersEl);
+      document.getElementById('wiz-add-member').addEventListener('click', () => _addMemberRow(membersEl));
+    }
+
+    body.querySelectorAll('.wiz-color').forEach(btn => {
+      btn.addEventListener('click', () => {
+        body.querySelectorAll('.wiz-color').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        _wizHeader = btn.dataset.cls;
+      });
+    });
+
+    document.getElementById('wiz-back').addEventListener('click', _showWizardStep1);
+    document.getElementById('wiz-create').addEventListener('click', _finishCreate);
+    body.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT')
+        _finishCreate();
+    });
+  }
+
+  function _finishCreate() {
+    const nameEl = document.getElementById('wiz-name');
+    const name   = nameEl.value.trim();
+    if (!name) { nameEl.focus(); nameEl.classList.add('wiz-input-error'); return; }
+
+    const t      = _wizType;
+    const role   = document.getElementById('wiz-role').value.trim();
+    const gmNote = document.getElementById('wiz-gmnote').value.trim();
+    const tagRaw = document.getElementById('wiz-tags').value.trim();
+    const tags   = tagRaw
+      ? tagRaw.split(',').map(s => s.trim()).filter(Boolean).map(s => ({ label: s, cls: 'tag-light' }))
+      : [];
+
+    let fields = [];
+    if (t.id === 'roster') {
+      document.querySelectorAll('#wiz-members .wiz-member-row').forEach(row => {
+        const mName  = row.querySelector('.wiz-member-name').value.trim();
+        const mNotes = row.querySelector('.wiz-member-notes').value.trim();
+        if (mName) fields.push({ label: mName, value: mNotes });
+      });
+      if (!fields.length) fields = [{ label: 'Members', value: '' }];
+    } else {
+      t.typeFields.forEach(f => {
+        const el  = document.getElementById(`wiz-field-${f.id}`);
+        fields.push({ label: f.label, value: el ? el.value.trim() : '' });
+      });
+    }
+
+    const customId = uid();
+    const cardData = {
+      cardType:    t.id,
+      name, role,
+      rank:        t.rank,
+      headerClass: _wizHeader || t.header,
+      fields, gmNote,
+      quote:       '',
+      tags,
+      _customId:   customId,
+    };
+
+    saveCustomCard(cardData);
+    closeCardWizard();
+    if (_wizOnCreated) _wizOnCreated(cardData);
+  }
+
+  function openCardWizard(onCreated) {
+    _wizType      = null;
+    _wizHeader    = null;
+    _wizOnCreated = onCreated || null;
+    document.getElementById('card-wizard').classList.remove('hidden');
+    _showWizardStep1();
+  }
+
+  function closeCardWizard() {
+    document.getElementById('card-wizard').classList.add('hidden');
+  }
+
+  function _initWizardGlobal() {
+    const el = document.getElementById('card-wizard');
+    document.getElementById('card-wizard-close').addEventListener('click', closeCardWizard);
+    el.addEventListener('click', e => { if (e.target === el) closeCardWizard(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !el.classList.contains('hidden')) closeCardWizard();
+    });
   }
 
   /* ── DOM refs ── */
@@ -107,16 +447,38 @@ const Endale = (() => {
   let _deleteMode = false;
 
   /* ════════════════════════════════════════════
-     ACTIVE MANAGER — pinned, locked link
+     CORE NAV — locked tool links (includes Active Manager)
   ════════════════════════════════════════════ */
 
-  function buildActiveManager() {
-    const el = document.getElementById('active-manager');
+  function buildCoreNav() {
+    const el = document.getElementById('core-nav');
     if (!el) return;
-    el.innerHTML =
-      `<div class="am-label">Active Session</div>
-       <div id="am-link" class="am-link">Active Manager</div>`;
-    document.getElementById('am-link').addEventListener('click', () => navigate(ACTIVE_PAGE));
+    el.innerHTML = CORE_NAV.map(item =>
+      `<div class="core-nav-item" data-page="${item.id}">
+         <span class="core-nav-icon">${item.icon}</span>
+         <span class="core-nav-item-label">${item.label}</span>
+       </div>`
+    ).join('');
+    el.querySelectorAll('.core-nav-item').forEach(item => {
+      item.addEventListener('click', () => navigate(item.dataset.page));
+    });
+  }
+
+  function buildRefNav() {
+    const el = document.getElementById('ref-nav');
+    if (!el) return;
+    el.innerHTML = REF_NAV.map(item =>
+      `<div class="ref-nav-item" data-page="${item.id}">${item.label}</div>`
+    ).join('');
+    el.querySelectorAll('.ref-nav-item').forEach(item => {
+      item.addEventListener('click', () => navigate(item.dataset.page));
+    });
+  }
+
+  function updateLockedNavActive(pageId) {
+    document.querySelectorAll('#core-nav .core-nav-item, #ref-nav .ref-nav-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.page === pageId);
+    });
   }
 
   /* ════════════════════════════════════════════
@@ -221,7 +583,7 @@ const Endale = (() => {
     });
   }
 
-  function startSectionDrag(sectionEl, startEvent) {
+  function startSectionDrag(sectionEl) {
     const si   = +sectionEl.dataset.sectionIdx;
     const rect = sectionEl.getBoundingClientRect();
 
@@ -287,7 +649,7 @@ const Endale = (() => {
 
   function buildNavFooter() {
     document.getElementById('nav-add-section-btn').addEventListener('click', () => {
-      const label = prompt('New section name:');
+      const label = prompt('New group name:');
       if (!label || !label.trim()) return;
       _nav.push({ id: 'custom-' + uid(), label: label.trim(), children: [], _open: true });
       saveNav();
@@ -363,7 +725,11 @@ const Endale = (() => {
     if (!cardData || pageId === ACTIVE_PAGE) return;
     const additions = loadAdditions();
     if (!additions[pageId]) additions[pageId] = [];
-    additions[pageId].push({ ...cardData, _additionId: uid() });
+    /* Custom cards: store only a reference to the single source of truth */
+    const entry = cardData._customId
+      ? { _customId: cardData._customId, _additionId: uid() }
+      : { ...cardData, _additionId: uid() };
+    additions[pageId].push(entry);
     saveAdditions(additions);
     /* Refresh immediately if the user is already on that page */
     if (currentHash() === pageId) render(pageId);
@@ -382,9 +748,7 @@ const Endale = (() => {
   }
 
   function render(pageId) {
-    /* Active Manager highlight */
-    const amLink = document.getElementById('am-link');
-    if (amLink) amLink.classList.toggle('active', pageId === ACTIVE_PAGE);
+    updateLockedNavActive(pageId);
 
     /* Active nav item */
     navTree.querySelectorAll('.nav-item').forEach(el => {
@@ -400,9 +764,30 @@ const Endale = (() => {
       }
     });
 
+    /* ── Built-in tool pages ── */
+    if (pageId === MAP_PAGE) {
+      pageTitle.textContent = 'Map Builder';
+      pageSub.textContent   = 'Floor planner';
+      pageBody.classList.remove('board-page');
+      pageBody.classList.add('mb-page');
+      MapBuilder.render(pageBody);
+      return;
+    }
+
+    if (pageId === CATALOGUE_PAGE) {
+      pageTitle.textContent = 'Full Catalogue';
+      pageSub.textContent   = 'Every card across all groups';
+      pageBody.classList.remove('board-page', 'mb-page');
+      renderCatalogue(pageBody);
+      return;
+    }
+
+    pageBody.classList.remove('mb-page');
+
     const data = _pages[pageId];
 
     if (!data) {
+      pageBody.classList.remove('board-page');
       pageTitle.textContent = pageId;
       pageSub.textContent   = '';
       pageBody.innerHTML    = '<p class="stub-message">Nothing here yet.</p>';
@@ -419,6 +804,7 @@ const Endale = (() => {
       pageBody.classList.remove('board-page');
       Cards.renderPage(enrichPage(pageId, data), pageBody);
       Images.attach(pageBody);
+      MapBuilder.attach(pageBody);
       attachDeleteButtons(pageBody);
     }
   }
@@ -440,7 +826,12 @@ const Endale = (() => {
 
     /* Apply field overrides to every cards-type group */
     let groups = data.groups.map((group, gi) => {
-      if (group.type !== 'cards') return group;
+      /* Roster / reference — hide the whole group or stamp _deleteInfo */
+      if (group.type !== 'cards') {
+        if (hidden[`${pageId}|${gi}`]) return null;
+        return { ...group, _deleteInfo: { type: 'original', key: `${pageId}|${gi}` } };
+      }
+
       return {
         ...group,
         entries: group.entries.map((entry, ei) => {
@@ -461,7 +852,7 @@ const Endale = (() => {
           };
         }),
       };
-    });
+    }).filter(Boolean);
 
     /* Append drag-dropped additions to the first cards group */
     if (pageAdditions.length) {
@@ -491,11 +882,29 @@ const Endale = (() => {
           };
         }
 
-        /* Custom card addition — standalone copy */
+        /* Custom card addition — resolve from the single store by _customId */
+        if (a._customId) {
+          const card = loadCustomCards().find(c => c._customId === a._customId);
+          if (!card) return null;
+          return {
+            name:        card.name   || 'Unnamed',
+            role:        card.role   || '',
+            rank:        [card.rank  || 'Custom', ''],
+            fields:      card.fields || [],
+            gmNote:      card.gmNote || '',
+            quote:       card.quote  || '',
+            tags:        card.tags   || [],
+            _imgKey:     `custom|${card._customId}`,
+            _imgName:    card.name,
+            _deleteInfo: { type: 'addition', targetPageId: pageId, additionId: a._additionId },
+          };
+        }
+
+        /* Legacy full-copy addition (pre-migration) — render as-is */
         return {
           name:        a.name   || 'Unnamed',
           role:        a.role   || '',
-          rank:        [a.rank  || 'Session Card', ''],
+          rank:        [a.rank  || 'Custom', ''],
           fields:      a.fields || [],
           gmNote:      a.gmNote || '',
           quote:       a.quote  || '',
@@ -550,7 +959,10 @@ const Endale = (() => {
     });
   }
 
-  function showDeleteConfirm(cardName, onYes) {
+  function showDeleteConfirm(cardName, extraMsg, onYes) {
+    /* Support old 2-arg call-sites: showDeleteConfirm(name, onYes) */
+    if (typeof extraMsg === 'function') { onYes = extraMsg; extraMsg = null; }
+
     const overlay = document.createElement('div');
     overlay.className = 'card-delete-modal';
 
@@ -565,13 +977,21 @@ const Endale = (() => {
     msg.appendChild(strong);
     msg.appendChild(document.createTextNode('?'));
 
+    inner.appendChild(msg);
+
+    if (extraMsg) {
+      const sub = document.createElement('p');
+      sub.className = 'card-delete-modal-sub';
+      sub.textContent = extraMsg;
+      inner.appendChild(sub);
+    }
+
     const btns = document.createElement('div');
     btns.className = 'card-delete-modal-btns';
     btns.innerHTML =
       `<button class="cdm-btn cdm-no">No</button>
-       <button class="cdm-btn cdm-yes">Yes</button>`;
+       <button class="cdm-btn cdm-yes">Yes, delete</button>`;
 
-    inner.appendChild(msg);
     inner.appendChild(btns);
     overlay.appendChild(inner);
     document.body.appendChild(overlay);
@@ -598,14 +1018,211 @@ const Endale = (() => {
   }
 
   /* ════════════════════════════════════════════
+     CATALOGUE — aggregates all cards-type entries
+  ════════════════════════════════════════════ */
+
+  function renderCatalogue(container) {
+    container.innerHTML = '';
+
+    const hidden    = loadHidden();
+    let   overrides = {};
+    try { overrides = JSON.parse(localStorage.getItem('endale-overrides')) || {}; } catch {}
+
+    /* ── Collect card entries with full data ── */
+    const cardItems  = []; /* { entry, headerClass, pageId, pageLabel, gi, ei, isCustom, dragPayload } */
+    const groupItems = []; /* { group, pageId, pageLabel, gi } — rosters and reference blocks */
+
+    for (const [pageId, pageData] of Object.entries(_pages)) {
+      if (!pageData.groups) continue;
+      pageData.groups.forEach((group, gi) => {
+        if (group.type === 'cards' && group.entries?.length) {
+          group.entries.forEach((entry, ei) => {
+            if (hidden[`${pageId}|${gi}|${ei}`]) return;
+            const key = `${pageId}|${gi}|${ei}`;
+            const ov  = overrides[key];
+            cardItems.push({
+              entry: {
+                ...entry,
+                /* Apply any overrides so catalogue always shows the latest edited values */
+                fields:  ov?.fields ?? entry.fields  ?? [],
+                gmNote:  ov?.gmNote ?? entry.gmNote  ?? '',
+                quote:   ov?.quote  ?? entry.quote   ?? '',
+                rank:    Array.isArray(entry.rank) ? entry.rank : [entry.rank || '', ''],
+                tags:    entry.tags || [],
+                _imgKey:  key,
+                _imgName: entry.name,
+              },
+              headerClass: group.headerClass || 'h-neutral',
+              pageId, pageLabel: pageData.title, gi, ei,
+              isCustom: false,
+              dragPayload: { _ref: true, _refPageId: pageId, _refGi: gi, _refEi: ei },
+            });
+          });
+        } else if (group.type === 'roster' || group.type === 'reference') {
+          if (!hidden[`${pageId}|${gi}`])
+            groupItems.push({ group, pageId, pageLabel: pageData.title, gi });
+        }
+      });
+    }
+
+    /* ── Custom cards — read directly from the single store ── */
+    loadCustomCards().forEach(card => {
+      cardItems.push({
+        entry: {
+          ...card,
+          rank:    Array.isArray(card.rank) ? card.rank : [card.rank || 'Custom', ''],
+          fields:  card.fields || [],
+          tags:    card.tags   || [],
+          _imgKey:  `custom|${card._customId}`,
+          _imgName: card.name,
+        },
+        headerClass: card.headerClass || 'h-neutral',
+        pageId: null, pageLabel: 'Custom',
+        isCustom: true,
+        dragPayload: { _customId: card._customId },
+      });
+    });
+
+    const total = cardItems.length + groupItems.length;
+    if (!total) {
+      container.innerHTML = '<p class="stub-message">No cards yet — create one in Active Manager.</p>';
+      return;
+    }
+
+    cardItems.sort((a, b) => (a.entry.name || '').localeCompare(b.entry.name || ''));
+    groupItems.sort((a, b) => (a.group.title || '').localeCompare(b.group.title || ''));
+
+    /* ── Search bar ── */
+    const searchWrap = document.createElement('div');
+    searchWrap.className = 'catalogue-search-wrap';
+    searchWrap.innerHTML =
+      `<input type="search" class="catalogue-search" placeholder="Search by name, role, or source…" autocomplete="off">`;
+    container.appendChild(searchWrap);
+    const searchInput = searchWrap.querySelector('.catalogue-search');
+
+    const info = document.createElement('p');
+    info.className = 'catalogue-info';
+    container.appendChild(info);
+
+    /* ── Card grid ── */
+    const grid = document.createElement('div');
+    grid.className = 'card-grid';
+
+    /* Individual cards */
+    cardItems.forEach(item => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = Cards.renderCardHTML(item.entry, item.headerClass);
+      const cardEl = wrap.firstElementChild;
+
+      /* Search data */
+      cardEl.dataset.searchText =
+        `${item.entry.name || ''} ${item.entry.role || ''} ${item.pageLabel}`.toLowerCase();
+
+      /* Delete button on the header */
+      const header = cardEl.querySelector('.card-header');
+      if (header) {
+        const delBtn = document.createElement('button');
+        delBtn.className = 'catalogue-card-delete';
+        delBtn.title = 'Delete card';
+        delBtn.textContent = '×';
+        delBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          const name = item.entry.name || 'this card';
+          const extraMsg = item.isCustom
+            ? 'This is a custom card — it will be removed from the catalogue and any groups it was added to.'
+            : 'This will hide the card everywhere in the app, including any groups it was added to.';
+          showDeleteConfirm(name, extraMsg, () => {
+            if (item.isCustom) deleteCustomCard(item.dragPayload._customId);
+            else               deleteWikiCard(item.pageId, item.gi, item.ei);
+            renderCatalogue(container);
+          });
+        });
+        header.appendChild(delBtn);
+      }
+
+      grid.appendChild(cardEl);
+    });
+
+    /* Roster / reference group cards */
+    groupItems.forEach(item => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = item.group.type === 'roster'
+        ? Cards.renderRosterHTML(item.group)
+        : Cards.renderReferenceHTML(item.group);
+      const groupEl = wrap.firstElementChild;
+      groupEl.dataset.searchText =
+        `${item.group.title || ''} ${item.group.role || ''} ${item.pageLabel}`.toLowerCase();
+
+      const header = groupEl.querySelector('.card-header');
+      if (header) {
+        const delBtn = document.createElement('button');
+        delBtn.className = 'catalogue-card-delete';
+        delBtn.title = 'Delete block';
+        delBtn.textContent = '×';
+        delBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          showDeleteConfirm(
+            item.group.title || 'this block',
+            'This will hide the block everywhere in the app.',
+            () => {
+              const h = loadHidden();
+              h[`${item.pageId}|${item.gi}`] = true;
+              saveHidden(h);
+              renderCatalogue(container);
+            }
+          );
+        });
+        header.appendChild(delBtn);
+      }
+
+      grid.appendChild(groupEl);
+    });
+
+    container.appendChild(grid);
+    Cards.attachToggle(grid);
+    Images.attach(grid);
+
+    /* ── Filter logic ── */
+    function applyFilter() {
+      const q = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+      grid.querySelectorAll('.card').forEach(el => {
+        const match = !q || (el.dataset.searchText || '').includes(q);
+        el.hidden = !match;
+        if (match) visible++;
+      });
+      info.textContent = q
+        ? `${visible} of ${total} shown`
+        : `${total} entries · click a card to expand · drag to a group in the sidebar`;
+    }
+
+    searchInput.addEventListener('input', applyFilter);
+    applyFilter();
+  }
+
+  /* ════════════════════════════════════════════
      BOOT
   ════════════════════════════════════════════ */
 
+  /* ── Double-click on any card page → open wizard ── */
+  function _attachPageDblClick() {
+    pageBody.addEventListener('dblclick', e => {
+      /* Ignore: board (has its own handler), map builder, card expand/edit interactions */
+      if (pageBody.classList.contains('board-page')) return;
+      if (pageBody.classList.contains('mb-page')) return;
+      if (e.target.closest('.card')) return;
+      openCardWizard(() => render(currentHash()));
+    });
+  }
+
   function init() {
     _nav = loadNav();
-    buildActiveManager();
+    buildCoreNav();
+    buildRefNav();
     buildNav();
     buildNavFooter();
+    _initWizardGlobal();
+    _attachPageDblClick();
     render(currentHash());
     window.addEventListener('hashchange', () => render(currentHash()));
   }
@@ -614,6 +1231,9 @@ const Endale = (() => {
     registerPage,
     init,
     getPages:       () => ({ ..._pages }),
+    saveCustomCard,
+    openCardWizard,
+    CARD_TYPES,
     /* Board ↔ Nav bridge */
     enterNavDrop,
     exitNavDrop,

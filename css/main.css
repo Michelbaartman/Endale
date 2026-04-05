@@ -205,38 +205,6 @@ html, body {
   font-style: italic;
 }
 
-/* ═══════════════════════════════════════════════
-   Active Manager — pinned top-of-sidebar link
-   ═══════════════════════════════════════════════ */
-
-#active-manager {
-  padding: 10px 18px 9px;
-  border-bottom: 1px solid var(--border-nav);
-  flex-shrink: 0;
-}
-.am-label {
-  font-size: 8px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-am-label);
-  margin-bottom: 5px;
-}
-#am-link {
-  display: block;
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 0.04em;
-  color: var(--text-am-link);
-  cursor: pointer;
-  padding: 4px 0;
-  transition: color 0.12s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  user-select: none;
-}
-#am-link:hover  { color: var(--accent-bright); }
-#am-link.active { color: var(--accent-bright); }
 
 /* ═══════════════════════════════════════════════
    Nav section header — updated layout for drag
@@ -305,23 +273,35 @@ html, body {
 .nav-delete-btn {
   display: none;
   flex-shrink: 0;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
-  color: #4a2020;
+  color: #886060;
   font-size: 9px;
   line-height: 1;
   cursor: pointer;
   align-items: center;
   justify-content: center;
   padding: 0;
-  margin-left: 3px;
-  transition: background 0.1s, color 0.1s;
+  margin-left: 4px;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
 }
-.nav-delete-btn:hover { background: #3a1010; color: #f0a0a0; }
+.nav-delete-btn:hover {
+  background: #3a1010;
+  border-color: #7a2020;
+  color: #f0a0a0;
+}
 #nav-tree.delete-mode .nav-delete-btn { display: flex; }
+
+/* Section-level delete — slightly larger target, clearly labelled */
+.nav-section-header .nav-delete-btn {
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  color: #a06060;
+}
 
 /* ═══════════════════════════════════════════════
    Sidebar footer — Styles / + Section / Edit
@@ -348,6 +328,7 @@ html, body {
   transition: color 0.1s, border-color 0.1s;
 }
 .sidebar-footer-btn:hover { color: #999; border-color: #555; }
+#nav-add-section-btn { margin-right: auto; }
 #nav-edit-btn { margin-left: auto; }
 #nav-edit-btn.edit-active { color: #e08080; border-color: #8a3030; }
 
@@ -368,4 +349,146 @@ html, body {
   background: rgba(200,146,74,0.15);
   color: var(--accent-bright);
   border-left-color: var(--accent-bright);
+}
+
+/* ═══════════════════════════════════════════════
+   Locked nav sections — Tools (core) + Reference
+   ═══════════════════════════════════════════════ */
+
+#core-nav {
+  flex-shrink: 0;
+  padding: 6px 0 6px;
+}
+
+/* Section separator label */
+.nav-sep-label {
+  flex-shrink: 0;
+  padding: 8px 18px 3px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #484848;
+  border-top: 1px solid var(--border-nav);
+}
+.nav-sep-label-groups {
+  flex: 0 0 auto; /* not stretched */
+}
+
+/* Core nav — tool items with icon */
+.core-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 18px;
+  font-size: 12px;
+  color: var(--text-nav);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  user-select: none;
+  transition: color 0.1s, border-color 0.1s;
+}
+.core-nav-item:hover { color: var(--text-nav-hover); }
+.core-nav-item.active {
+  color: var(--text-nav-active);
+  border-left-color: var(--accent-bright);
+  background: rgba(255,255,255,0.03);
+}
+.core-nav-icon {
+  font-size: 13px;
+  opacity: 0.55;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.core-nav-item:hover .core-nav-icon,
+.core-nav-item.active .core-nav-icon { opacity: 1; }
+
+/* Reference nav — plain text items, no icon */
+#ref-nav {
+  flex-shrink: 0;
+  padding: 4px 0 6px;
+}
+.ref-nav-item {
+  padding: 5px 18px 5px 20px;
+  font-size: 12px;
+  color: var(--text-nav);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: color 0.1s, border-color 0.1s;
+  user-select: none;
+}
+.ref-nav-item:hover { color: var(--text-nav-hover); }
+.ref-nav-item.active {
+  color: var(--text-nav-active);
+  border-left-color: var(--accent-bright);
+  background: rgba(255,255,255,0.03);
+}
+
+/* ── Full Catalogue page ── */
+.catalogue-info {
+  font-size: 11px;
+  color: var(--text-label);
+  font-style: italic;
+  margin-bottom: 18px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Catalogue search ── */
+.catalogue-search-wrap {
+  margin-bottom: 14px;
+}
+.catalogue-search {
+  width: 100%;
+  max-width: 340px;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-card);
+  border-radius: 3px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  outline: none;
+  letter-spacing: 0.02em;
+}
+.catalogue-search:focus { border-color: var(--accent-bright); }
+.catalogue-search::placeholder { color: var(--text-label); }
+
+/* ── Delete button on card headers (catalogue only) ── */
+.catalogue-card-delete {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+.card-header:hover .catalogue-card-delete { display: flex; }
+.catalogue-card-delete:hover {
+  background: rgba(80,0,0,0.5);
+  border-color: rgba(200,80,80,0.6);
+  color: #f0a0a0;
+}
+
+/* ── Drag ghost that follows the cursor ── */
+.catalogue-drag-ghost {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-bright);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-family: Georgia, serif;
+  font-size: 11px;
+  color: var(--text-primary);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  white-space: nowrap;
+  transform: rotate(-2deg);
 }
