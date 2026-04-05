@@ -57,6 +57,8 @@ const Cards = (() => {
       const d = entry._deleteInfo;
       if (d.type === 'original') {
         delAttrs = ` data-delete-type="original" data-delete-key="${esc(d.key)}"`;
+      } else if (d.type === 'custom') {
+        delAttrs = ` data-delete-type="custom" data-delete-custom="${esc(d.customId)}"`;
       } else {
         delAttrs = ` data-delete-type="addition" data-delete-tid="${esc(d.targetPageId)}" data-delete-aid="${esc(d.additionId)}"`;
       }

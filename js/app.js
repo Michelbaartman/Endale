@@ -664,6 +664,16 @@ const Endale = (() => {
         if (raw) state[k] = JSON.parse(raw);
       } catch {}
     }
+    /* Collect all img-link:* keys into a flat object */
+    const imgLinks = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('img-link:')) {
+        const val = localStorage.getItem(k);
+        if (val) imgLinks[k] = val;
+      }
+    }
+    if (Object.keys(imgLinks).length) state['endale-img-links'] = imgLinks;
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = Object.assign(document.createElement('a'), {
@@ -1079,6 +1089,7 @@ const Endale = (() => {
                 tags:    entry.tags || [],
                 _imgKey:  key,
                 _imgName: entry.name,
+                _deleteInfo: { type: 'original', key },
               },
               headerClass: group.headerClass || 'h-neutral',
               pageId, pageLabel: pageData.title, gi, ei,
@@ -1103,6 +1114,7 @@ const Endale = (() => {
           tags:    card.tags   || [],
           _imgKey:  `custom|${card._customId}`,
           _imgName: card.name,
+          _deleteInfo: { type: 'custom', customId: card._customId },
         },
         headerClass: card.headerClass || 'h-neutral',
         pageId: null, pageLabel: 'Custom',
@@ -1232,14 +1244,196 @@ const Endale = (() => {
      BOOT
   ════════════════════════════════════════════ */
 
-  /* ── Double-click on any card page → open wizard ── */
+  /* ════════════════════════════════════════════
+     CARD EDITOR — double-click any card to edit
+  ════════════════════════════════════════════ */
+
+  const OVERRIDES_KEY = 'endale-overrides';
+
+  function ceEsc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function loadOverrides() {
+    try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY)) || {}; }
+    catch { return {}; }
+  }
+  function saveOverrides(ov) {
+    localStorage.setItem(OVERRIDES_KEY, JSON.stringify(ov));
+  }
+
+  function openCardEditor(cardEl) {
+    /* Only collapsible (individual) cards — not rosters or reference blocks */
+    if (!cardEl.classList.contains('collapsible')) return;
+
+    const deleteType = cardEl.dataset.deleteType;
+    if (!deleteType) return;
+
+    /* ── Resolve the card's current data ── */
+    let cardData   = null;
+    let isCustom   = false;
+    let wikiKey    = null;  /* 'pageId|gi|ei' for wiki cards */
+    let customId   = null;
+
+    if (deleteType === 'original') {
+      wikiKey = cardEl.dataset.deleteKey;
+      const [pageId, gi, ei] = wikiKey.split('|');
+      const entry = _pages[pageId]?.groups?.[+gi]?.entries?.[+ei];
+      if (!entry) return;
+      const ov = loadOverrides()[wikiKey] || {};
+      cardData = {
+        name:   ov.name   !== undefined ? ov.name   : entry.name,
+        role:   ov.role   !== undefined ? ov.role   : entry.role,
+        fields: ov.fields !== undefined ? ov.fields.map(f => ({...f})) : (entry.fields || []).map(f => ({...f})),
+        gmNote: ov.gmNote !== undefined ? ov.gmNote : (entry.gmNote || ''),
+        quote:  ov.quote  !== undefined ? ov.quote  : (entry.quote  || ''),
+      };
+
+    } else if (deleteType === 'custom') {
+      customId = cardEl.dataset.deleteCustom;
+      const card = loadCustomCards().find(c => c._customId === customId);
+      if (!card) return;
+      cardData = { name: card.name, role: card.role, fields: (card.fields||[]).map(f=>({...f})),
+                   gmNote: card.gmNote||'', quote: card.quote||'' };
+      isCustom = true;
+
+    } else if (deleteType === 'addition') {
+      const targetPageId = cardEl.dataset.deleteTid;
+      const additionId   = cardEl.dataset.deleteAid;
+      const additions    = loadAdditions()[targetPageId] || [];
+      const addition     = additions.find(a => a._additionId === additionId);
+      if (!addition) return;
+
+      if (addition._customId) {
+        customId = addition._customId;
+        const card = loadCustomCards().find(c => c._customId === customId);
+        if (!card) return;
+        cardData = { name: card.name, role: card.role, fields: (card.fields||[]).map(f=>({...f})),
+                     gmNote: card.gmNote||'', quote: card.quote||'' };
+        isCustom = true;
+      } else if (addition._ref) {
+        /* Cross-page wiki ref — treat as wiki with the original key */
+        wikiKey = `${addition._refPageId}|${addition._refGi}|${addition._refEi}`;
+        const entry = _pages[addition._refPageId]?.groups?.[+addition._refGi]?.entries?.[+addition._refEi];
+        if (!entry) return;
+        const ov = loadOverrides()[wikiKey] || {};
+        cardData = {
+          name:   ov.name   !== undefined ? ov.name   : entry.name,
+          role:   ov.role   !== undefined ? ov.role   : entry.role,
+          fields: ov.fields !== undefined ? ov.fields.map(f=>({...f})) : (entry.fields||[]).map(f=>({...f})),
+          gmNote: ov.gmNote !== undefined ? ov.gmNote : (entry.gmNote||''),
+          quote:  ov.quote  !== undefined ? ov.quote  : (entry.quote||''),
+        };
+      } else {
+        return; /* legacy full-copy addition — skip */
+      }
+    } else {
+      return;
+    }
+
+    /* ── Build the edit modal ── */
+    document.getElementById('card-edit-modal')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id        = 'card-edit-modal';
+    overlay.className = 'board-modal';
+
+    const fieldsHtml = cardData.fields.map((f, i) => `
+      <div class="wiz-row">
+        <label class="wiz-field-label">${ceEsc(f.label)}</label>
+        <input class="wiz-input" data-fi="${i}" value="${ceEsc(f.value)}">
+      </div>`).join('');
+
+    overlay.innerHTML = `
+      <div class="board-wizard-inner card-edit-inner">
+        <div class="board-modal-header">
+          <span class="board-modal-title">Edit — ${ceEsc(cardData.name)}</span>
+          <button class="board-modal-close-btn" id="card-edit-close">✕</button>
+        </div>
+        <div class="board-wizard-body card-edit-body">
+          <div class="wiz-form">
+            <div class="wiz-row">
+              <label class="wiz-field-label">Name</label>
+              <input class="wiz-input" id="ce-name" value="${ceEsc(cardData.name)}">
+            </div>
+            <div class="wiz-row">
+              <label class="wiz-field-label">Role / subtitle</label>
+              <input class="wiz-input" id="ce-role" value="${ceEsc(cardData.role)}">
+            </div>
+            ${fieldsHtml}
+            <div class="wiz-row">
+              <label class="wiz-field-label">GM Note</label>
+              <textarea class="wiz-textarea" id="ce-gmnote" rows="3">${ceEsc(cardData.gmNote)}</textarea>
+            </div>
+            <div class="wiz-row">
+              <label class="wiz-field-label">Quote</label>
+              <input class="wiz-input" id="ce-quote" value="${ceEsc(cardData.quote)}">
+            </div>
+          </div>
+          <div class="wiz-footer">
+            <button class="wiz-cancel-btn" id="card-edit-cancel">Cancel</button>
+            <button class="wiz-ok-btn" id="card-edit-save">Save</button>
+          </div>
+        </div>
+      </div>`;
+
+    const close = () => overlay.remove();
+    overlay.querySelector('#card-edit-close').addEventListener('click', close);
+    overlay.querySelector('#card-edit-cancel').addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('#card-edit-save').addEventListener('click', () => {
+      /* Collect edited values */
+      const newName   = overlay.querySelector('#ce-name').value.trim();
+      const newRole   = overlay.querySelector('#ce-role').value.trim();
+      const newGmNote = overlay.querySelector('#ce-gmnote').value.trim();
+      const newQuote  = overlay.querySelector('#ce-quote').value.trim();
+      const newFields = cardData.fields.map((f, i) => ({
+        label: f.label,
+        value: overlay.querySelector(`[data-fi="${i}"]`).value,
+      }));
+
+      if (isCustom && customId) {
+        /* Custom card — update in store directly */
+        const cards = loadCustomCards();
+        const idx   = cards.findIndex(c => c._customId === customId);
+        if (idx >= 0) {
+          cards[idx] = { ...cards[idx], name: newName, role: newRole,
+                         fields: newFields, gmNote: newGmNote, quote: newQuote };
+          saveCustomCard(cards[idx]);
+        }
+      } else if (wikiKey) {
+        /* Wiki card — write to overrides */
+        const ov   = loadOverrides();
+        ov[wikiKey] = { name: newName, role: newRole, fields: newFields,
+                        gmNote: newGmNote, quote: newQuote };
+        saveOverrides(ov);
+      }
+
+      close();
+      render(currentHash());
+    });
+
+    document.body.appendChild(overlay);
+    overlay.querySelector('#ce-name').focus();
+  }
+
+  /* ── Double-click on any card page → edit card OR open wizard on empty space ── */
   function _attachPageDblClick() {
     pageBody.addEventListener('dblclick', e => {
-      /* Ignore: board (has its own handler), map builder, card expand/edit interactions */
+      /* Ignore: board (has its own handler), map builder */
       if (pageBody.classList.contains('board-page')) return;
       if (pageBody.classList.contains('mb-page')) return;
-      if (e.target.closest('.card')) return;
-      openCardWizard(() => render(currentHash()));
+
+      const card = e.target.closest('.card.collapsible');
+      if (card) {
+        openCardEditor(card);
+        return;
+      }
+      /* Empty space → new card wizard */
+      if (!e.target.closest('.card')) {
+        openCardWizard(() => render(currentHash()));
+      }
     });
   }
 

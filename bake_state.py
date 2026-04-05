@@ -52,7 +52,12 @@ KEYS_TO_BAKE = [
     'endale-overrides',
     'endale-maps',
     'endale-board',
+    'endale-img-links',   # flat dict of { 'img-link:key': 'path/to/art.png' }
 ]
+
+# Keys whose values are flat string dicts — restore each entry as a raw string,
+# not JSON.stringify'd, because the app reads them via localStorage.getItem directly.
+FLAT_STRING_KEYS = {'endale-img-links'}
 
 OUTPUT_PATH  = os.path.join('data', 'state', 'local-state.js')
 INDEX_PATH   = 'index.html'
@@ -83,11 +88,28 @@ def load_export(path):
 
 
 def build_js(state, timestamp):
-    state_json = json.dumps(state, indent=2, ensure_ascii=False)
-    # Indent the STATE value by two extra spaces to sit inside the IIFE
-    state_indented = '\n'.join(
-        '  ' + line for line in state_json.splitlines()
-    )
+    # Split into normal (JSON-encoded) and flat-string keys
+    normal_state = {k: v for k, v in state.items() if k not in FLAT_STRING_KEYS}
+    flat_state   = {k: v for k, v in state.items() if k in FLAT_STRING_KEYS}
+
+    normal_json   = json.dumps(normal_state, indent=2, ensure_ascii=False)
+    normal_indent = '\n'.join('  ' + line for line in normal_json.splitlines())
+
+    # Build the flat-string restore block (img-link:* values are raw path strings)
+    flat_lines = []
+    for flat_dict in flat_state.values():
+        for raw_key, raw_val in flat_dict.items():
+            k_js = json.dumps(raw_key, ensure_ascii=False)
+            v_js = json.dumps(raw_val, ensure_ascii=False)
+            flat_lines.append(f'  localStorage.setItem({k_js}, {v_js});')
+    flat_block = '\n'.join(flat_lines)
+
+    img_section = (
+        '\n'
+        '  /* Image links — stored as raw strings, not JSON-encoded */\n'
+        + flat_block + '\n'
+    ) if flat_block else ''
+
     return (
         '/* ═══════════════════════════════════════════════\n'
         '   ENDALE — Baked local state\n'
@@ -97,13 +119,14 @@ def build_js(state, timestamp):
         '\n'
         '(function () {\n'
         '  var STATE =\n'
-        f'{state_indented};\n'
+        f'{normal_indent};\n'
         '\n'
         '  for (var k in STATE) {\n'
         '    if (Object.prototype.hasOwnProperty.call(STATE, k)) {\n'
         '      localStorage.setItem(k, JSON.stringify(STATE[k]));\n'
         '    }\n'
         '  }\n'
+        f'{img_section}'
         '})();\n'
     )
 
