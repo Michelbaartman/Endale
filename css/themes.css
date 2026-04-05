@@ -1,0 +1,346 @@
+/* ═══════════════════════════════════════════════
+   ENDALE — Theme system
+   Overrides CSS variables defined in main.css :root.
+   ═══════════════════════════════════════════════ */
+
+/* ── Hearthside — candlelit tavern warmth ── */
+[data-theme="hearthside"] {
+  --bg-sidebar:         #160f07;
+  --bg-content:         #f5eedf;
+  --bg-card:            #fdf8ee;
+  --border-nav:         #2a1c0e;
+  --border-content:     #c8a878;
+  --border-card:        #c8a878;
+  --border-card-inner:  #e0cca0;
+  --text-nav:           #b89870;
+  --text-nav-active:    #f4e8d0;
+  --text-nav-hover:     #d8c090;
+  --accent:             #8a5c20;
+  --accent-bright:      #d4944a;
+  --text-site-title:    #f4e8d0;
+  --text-tagline:       #5a3a1a;
+  --text-am-label:      #4a2c10;
+  --text-am-link:       #906030;
+  --text-stub:          #4a3020;
+  --text-page-title:    #1a0e04;
+  --text-page-subtitle: #8a7050;
+  --text-primary:       #1a0e04;
+  --text-field:         #2a1e0a;
+  --text-body:          #5a4a30;
+  --text-secondary:     #8a7050;
+  --text-label:         #a88a60;
+  --bg-gm-note:         #ede5cc;
+  --border-accent:      #c4a870;
+  --bg-input:           #f5edd5;
+  --bg-board:           #4a3420;
+  --bg-toolbar:         #e8dcc0;
+}
+
+/* ── Daggerheart — arcane purple & gold ── */
+[data-theme="daggerheart"] {
+  --bg-sidebar:         #0e0818;
+  --bg-content:         #f2edfb;
+  --bg-card:            #faf6fe;
+  --border-nav:         #2a1a40;
+  --border-content:     #c0a8e0;
+  --border-card:        #c0a8e0;
+  --border-card-inner:  #ddd0f4;
+  --text-nav:           #9a80c0;
+  --text-nav-active:    #ede0ff;
+  --text-nav-hover:     #c4a8f0;
+  --accent:             #6040a0;
+  --accent-bright:      #b080f0;
+  --text-site-title:    #ede0ff;
+  --text-tagline:       #4a2e70;
+  --text-am-label:      #3a2060;
+  --text-am-link:       #8050c0;
+  --text-stub:          #3a2860;
+  --text-page-title:    #1a0830;
+  --text-page-subtitle: #7860a0;
+  --text-primary:       #1a0830;
+  --text-field:         #2a1848;
+  --text-body:          #503878;
+  --text-secondary:     #7860a0;
+  --text-label:         #a090c8;
+  --bg-gm-note:         #ede4f8;
+  --border-accent:      #c0a8e0;
+  --bg-input:           #f5f0fe;
+  --bg-board:           #1e1030;
+  --bg-toolbar:         #e4def4;
+}
+
+/* ── Midnight Ink — full dark, inky depths ── */
+[data-theme="midnight-ink"] {
+  --bg-sidebar:         #0a0a12;
+  --bg-content:         #12121e;
+  --bg-card:            #1e1e30;
+  --border-nav:         #1a1a2e;
+  --border-content:     #2a2a42;
+  --border-card:        #2e2e4a;
+  --border-card-inner:  #262640;
+  --text-nav:           #6060a0;
+  --text-nav-active:    #d0cce8;
+  --text-nav-hover:     #9898c8;
+  --accent:             #5050a0;
+  --accent-bright:      #9090d8;
+  --text-site-title:    #d0cce8;
+  --text-tagline:       #303048;
+  --text-am-label:      #252540;
+  --text-am-link:       #6060a0;
+  --text-stub:          #2a2a44;
+  --text-page-title:    #d0cce8;
+  --text-page-subtitle: #6060a0;
+  --text-primary:       #d0cce8;
+  --text-field:         #b8b4d0;
+  --text-body:          #9090b0;
+  --text-secondary:     #7070a0;
+  --text-label:         #5a5a88;
+  --bg-gm-note:         #1a1a30;
+  --border-accent:      #3a3a58;
+  --bg-input:           #1a1a2c;
+  --bg-board:           #08080f;
+  --bg-toolbar:         #1a1a28;
+}
+
+/* ── Verdant Grimoire — deep forest & mossy stone ── */
+[data-theme="verdant"] {
+  --bg-sidebar:         #060f05;
+  --bg-content:         #eef5e8;
+  --bg-card:            #f6fbf2;
+  --border-nav:         #142010;
+  --border-content:     #b0c8a0;
+  --border-card:        #b0c8a0;
+  --border-card-inner:  #cce0be;
+  --text-nav:           #7a9870;
+  --text-nav-active:    #d8f0d0;
+  --text-nav-hover:     #a8c8a0;
+  --accent:             #2a6020;
+  --accent-bright:      #58a038;
+  --text-site-title:    #d8f0d0;
+  --text-tagline:       #2a4020;
+  --text-am-label:      #1e3018;
+  --text-am-link:       #4a8030;
+  --text-stub:          #2a3828;
+  --text-page-title:    #0a1808;
+  --text-page-subtitle: #5a7850;
+  --text-primary:       #0a1808;
+  --text-field:         #182c10;
+  --text-body:          #406030;
+  --text-secondary:     #5a7850;
+  --text-label:         #80a070;
+  --bg-gm-note:         #e0edda;
+  --border-accent:      #a0c090;
+  --bg-input:           #f0f8ea;
+  --bg-board:           #253820;
+  --bg-toolbar:         #dce8d4;
+}
+
+/* ── Crimson Court — gothic red & ivory ── */
+[data-theme="crimson-court"] {
+  --bg-sidebar:         #0e0505;
+  --bg-content:         #f8f0ee;
+  --bg-card:            #fdfaf9;
+  --border-nav:         #2a1010;
+  --border-content:     #d0b4b0;
+  --border-card:        #d0b4b0;
+  --border-card-inner:  #ead8d5;
+  --text-nav:           #a07870;
+  --text-nav-active:    #f5e8e5;
+  --text-nav-hover:     #d4b0a8;
+  --accent:             #801818;
+  --accent-bright:      #b83030;
+  --text-site-title:    #f5e8e5;
+  --text-tagline:       #4a1a18;
+  --text-am-label:      #3a1414;
+  --text-am-link:       #903030;
+  --text-stub:          #402020;
+  --text-page-title:    #1a0808;
+  --text-page-subtitle: #8a6060;
+  --text-primary:       #1a0808;
+  --text-field:         #2c1818;
+  --text-body:          #604040;
+  --text-secondary:     #8a6060;
+  --text-label:         #b09090;
+  --bg-gm-note:         #ede0de;
+  --border-accent:      #c4a0a0;
+  --bg-input:           #f5ede8;
+  --bg-board:           #2a1010;
+  --bg-toolbar:         #e8dcd8;
+}
+
+/* ── Brass & Steam — burnished gold & sepia ── */
+[data-theme="brass-steam"] {
+  --bg-sidebar:         #0e0c06;
+  --bg-content:         #f4ede0;
+  --bg-card:            #faf3e4;
+  --border-nav:         #2a2008;
+  --border-content:     #c8a868;
+  --border-card:        #c8a868;
+  --border-card-inner:  #e8d8a8;
+  --text-nav:           #a89050;
+  --text-nav-active:    #f5eecc;
+  --text-nav-hover:     #d4c070;
+  --accent:             #7a5808;
+  --accent-bright:      #d4a020;
+  --text-site-title:    #f5eecc;
+  --text-tagline:       #4a3808;
+  --text-am-label:      #3a2c06;
+  --text-am-link:       #9a7020;
+  --text-stub:          #3a3010;
+  --text-page-title:    #1a1406;
+  --text-page-subtitle: #8a7850;
+  --text-primary:       #1a1406;
+  --text-field:         #2c2410;
+  --text-body:          #5a4820;
+  --text-secondary:     #7a6840;
+  --text-label:         #a8905a;
+  --bg-gm-note:         #ede5cc;
+  --border-accent:      #c4a060;
+  --bg-input:           #f0e8c8;
+  --bg-board:           #3a2c10;
+  --bg-toolbar:         #e8dcc0;
+}
+
+/* ════════════════════════════════════════════
+   THEME PICKER MODAL
+════════════════════════════════════════════ */
+
+.theme-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-modal-inner {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 5px;
+  width: 480px;
+  max-width: 94vw;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  overflow: hidden;
+  font-family: Georgia, serif;
+}
+
+.theme-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-card-inner);
+  flex-shrink: 0;
+}
+
+.theme-modal-title {
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.theme-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-label);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px 6px;
+  font-family: Georgia, serif;
+  transition: color 0.1s;
+}
+.theme-modal-close:hover { color: var(--text-primary); }
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px;
+  overflow-y: auto;
+}
+.theme-grid::-webkit-scrollbar { width: 4px; }
+.theme-grid::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 2px; }
+
+/* ── Individual swatch ── */
+.theme-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--border-card);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+  font-family: Georgia, serif;
+  position: relative;
+}
+.theme-swatch:hover {
+  background: var(--bg-gm-note);
+  border-color: var(--border-accent);
+}
+.theme-swatch.theme-swatch-active {
+  border-color: var(--accent-bright);
+  background: var(--bg-gm-note);
+}
+
+/* Mini color preview */
+.theme-swatch-preview {
+  display: flex;
+  height: 44px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.12);
+  flex-shrink: 0;
+}
+.ts-sidebar {
+  width: 28%;
+  flex-shrink: 0;
+}
+.ts-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+.ts-accent {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  opacity: 0.9;
+}
+
+.theme-swatch-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.theme-swatch-desc {
+  font-size: 10px;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Active check */
+.theme-swatch-check {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 11px;
+  color: var(--accent-bright);
+  font-style: normal;
+}
