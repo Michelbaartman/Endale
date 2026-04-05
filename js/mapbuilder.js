@@ -33,6 +33,7 @@ const MapBuilder = (() => {
     stairs:     { label: 'Stairs ↑',     color: '#6a5a40', stroke: '#4a3a20', dark: false },
     stairsdown: { label: 'Stairs ↓',     color: '#6a5a40', stroke: '#4a3a20', dark: false },
     table:      { label: 'Table',        color: '#7a5228', stroke: '#4a3010', dark: false },
+    barrel:     { label: 'Crate',         color: '#b07838', stroke: '#6a3a08', dark: false },
     water:      { label: 'Water',        color: '#244a7a', stroke: '#183060', dark: false },
     special:    { label: 'POI',          color: '#502870', stroke: '#381858', dark: false },
     poi2:       { label: 'POI Red',      color: '#702020', stroke: '#4a1010', dark: true  },
@@ -659,29 +660,84 @@ const MapBuilder = (() => {
       if (!nE) { ctx.moveTo(x1t - hi, y0t + (nN?0:hi)); ctx.lineTo(x1t - hi, y1t - (nS?0:hi)); }
       ctx.stroke();
 
+    } else if (tile === 'barrel') {
+      /* Top-down crate — tile-filling wooden box with plank lines, X brace, corner brackets */
+      const cm = csz * 0.06;                          /* inset margin */
+      const cx0 = px + cm, cy0 = py + cm;
+      const cw  = csz - cm * 2, ch = csz - cm * 2;
+      const cx1 = cx0 + cw,     cy1 = cy0 + ch;
+
+      /* Face fill */
+      ctx.fillStyle = 'rgba(185,128,58,0.82)';
+      ctx.fillRect(cx0, cy0, cw, ch);
+
+      /* Plank lines — three horizontal divisions */
+      ctx.strokeStyle = 'rgba(90,45,8,0.30)';
+      ctx.lineWidth = Math.max(0.4, csz * 0.028);
+      [0.33, 0.67].forEach(t => {
+        const ly = cy0 + ch * t;
+        ctx.beginPath(); ctx.moveTo(cx0, ly); ctx.lineTo(cx1, ly); ctx.stroke();
+      });
+
+      /* X brace — diagonal straps corner to corner */
+      ctx.strokeStyle = 'rgba(70,32,5,0.55)';
+      ctx.lineWidth = Math.max(0.6, csz * 0.042);
+      ctx.beginPath(); ctx.moveTo(cx0, cy0); ctx.lineTo(cx1, cy1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx1, cy0); ctx.lineTo(cx0, cy1); ctx.stroke();
+
+      /* Outer border */
+      ctx.strokeStyle = 'rgba(70,32,5,0.82)';
+      ctx.lineWidth = Math.max(0.8, csz * 0.055);
+      ctx.strokeRect(cx0, cy0, cw, ch);
+
+      /* Corner brackets — small L-shapes at each corner */
+      const bl = csz * 0.14;                          /* bracket arm length */
+      ctx.strokeStyle = 'rgba(40,16,2,0.75)';
+      ctx.lineWidth = Math.max(0.8, csz * 0.055);
+      ctx.lineCap = 'square';
+      [
+        [cx0, cy0,  1,  1],
+        [cx1, cy0, -1,  1],
+        [cx0, cy1,  1, -1],
+        [cx1, cy1, -1, -1],
+      ].forEach(([bx, by, dx, dy]) => {
+        ctx.beginPath();
+        ctx.moveTo(bx + dx * bl, by);
+        ctx.lineTo(bx, by);
+        ctx.lineTo(bx, by + dy * bl);
+        ctx.stroke();
+      });
+      ctx.lineCap = 'butt';
+
+      /* Face highlight — faint top-left sheen */
+      ctx.fillStyle = 'rgba(255,220,140,0.10)';
+      ctx.fillRect(cx0, cy0, cw * 0.55, ch * 0.55);
+
     } else if (tile === 'special' || tile === 'poi2' || tile === 'poi3' || tile === 'poi4') {
-      /* Subtle POI — small filled circle in top-left corner + faint tint overlay */
-      const TINTS = {
-        special:  { tint: 'rgba(200,155,255,0.10)', dot: 'rgba(190,130,255,0.82)', ring: 'rgba(160,100,240,0.55)' },
-        poi2:     { tint: 'rgba(255,100,80,0.10)',  dot: 'rgba(220,80,60,0.85)',   ring: 'rgba(200,60,40,0.55)'  },
-        poi3:     { tint: 'rgba(80,200,110,0.10)',  dot: 'rgba(55,165,80,0.85)',   ring: 'rgba(40,140,65,0.55)'  },
-        poi4:     { tint: 'rgba(80,145,255,0.10)',  dot: 'rgba(55,115,220,0.85)',  ring: 'rgba(40,90,200,0.55)'  },
+      /* POI — stone base so it blends with floor context; minimal centred ring marker */
+      const MARKS = {
+        special: { ring: 'rgba(160,110,220,0.42)', dot: 'rgba(160,110,220,0.55)' },
+        poi2:    { ring: 'rgba(180,70,55,0.38)',   dot: 'rgba(190,80,60,0.52)'   },
+        poi3:    { ring: 'rgba(50,130,65,0.38)',   dot: 'rgba(55,145,70,0.52)'   },
+        poi4:    { ring: 'rgba(50,100,190,0.38)',  dot: 'rgba(55,110,205,0.52)'  },
       };
-      const t2 = TINTS[tile] || TINTS.special;
-      /* Very faint colour wash over the cell */
-      ctx.fillStyle = t2.tint;
+      const mk = MARKS[tile] || MARKS.special;
+
+      /* Floor base — stone tone so the tile reads as floor, not a coloured block */
+      ctx.fillStyle = '#c8bda8';
       ctx.fillRect(px, py, csz, csz);
-      /* Small marker circle — top-left corner */
-      const mr = csz * 0.13;
-      const mx = px + csz * 0.22, my = py + csz * 0.22;
-      ctx.fillStyle = t2.dot;
-      ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = t2.ring;
-      ctx.lineWidth   = Math.max(0.5, csz * 0.035);
-      ctx.stroke();
-      /* Tiny inner highlight */
-      ctx.fillStyle = 'rgba(255,255,255,0.30)';
-      ctx.beginPath(); ctx.arc(mx - mr * 0.25, my - mr * 0.25, mr * 0.35, 0, Math.PI * 2); ctx.fill();
+
+      /* Centred ring — thin stroke, low opacity */
+      const cr  = csz * 0.34;
+      const cx2 = px + csz * 0.5, cy2 = py + csz * 0.5;
+      ctx.strokeStyle = mk.ring;
+      ctx.lineWidth   = Math.max(0.8, csz * 0.055);
+      ctx.beginPath(); ctx.arc(cx2, cy2, cr, 0, Math.PI * 2); ctx.stroke();
+
+      /* Tiny filled centre dot */
+      const dr = Math.max(1, csz * 0.09);
+      ctx.fillStyle = mk.dot;
+      ctx.beginPath(); ctx.arc(cx2, cy2, dr, 0, Math.PI * 2); ctx.fill();
     }
 
     ctx.restore(); /* end clip */
@@ -823,6 +879,8 @@ const MapBuilder = (() => {
       if (fl.thinwalls) {
         ['N','S','E','W'].forEach(e => delete fl.thinwalls[`${x},${y},${e}`]);
       }
+    } else if (_tool === 'eraselabel') {
+      if (fl.labels) delete fl.labels[key];
     } else if (_tool === 'erasewall') {
       if (fl.cells[key] === 'wall') delete fl.cells[key];
       if (fl.thinwalls) {
@@ -1264,6 +1322,353 @@ const MapBuilder = (() => {
   }
 
   /* ════════════════════════════════════════════
+     ASCII MAP IMPORT
+     Parses the endale_ascii_map_spec format and writes tiles to the active floor.
+  ════════════════════════════════════════════ */
+
+  /* Symbol → stored tile name + optional label overlay */
+  const ASCII_SYMBOLS = {
+    /* Floor tiles */
+    '.': { tile: 'stone'  },
+    'v': { tile: 'cave'   },
+    ',': { tile: 'grass'  },
+    'd': { tile: 'dirt'   },
+    '_': { tile: 'sand'   },
+    'w': { tile: 'wood'   },
+    'c': { tile: 'carpet' },
+    /* Walls / impassable */
+    '#': { tile: 'wall'   },
+    '%': { tile: 'cave'   },
+    'M': { tile: 'wall'   },
+    /* Doors & passages */
+    '+': { tile: 'door'   },
+    '/': { tile: 'stone'  },
+    'X': { tile: 'stone', label: 'X' },
+    'S': { tile: 'stairsdown' },
+    's': { tile: 'stairsdown' },
+    /* Furniture & objects */
+    'O': { tile: 'table'  },
+    'o': { tile: 'barrel' },
+    '|': { tile: 'wall'   },
+    '@': { tile: 'stone', label: '@' },
+    '&': { tile: 'special' },
+    '$': { tile: 'stone', label: '$' },
+    /* POI — enemies */
+    '1': { tile: 'poi2', label: '1' },
+    '2': { tile: 'poi2', label: '2' },
+    '3': { tile: 'poi2', label: '3' },
+    '4': { tile: 'poi2', label: '4' },
+    '5': { tile: 'poi2', label: '5' },
+    '6': { tile: 'poi2', label: '6' },
+    '7': { tile: 'poi2', label: '7' },
+    '8': { tile: 'poi2', label: '8' },
+    '9': { tile: 'poi2', label: '9' },
+    /* POI — players */
+    'A': { tile: 'poi4', label: 'A' },
+    'B': { tile: 'poi4', label: 'B' },
+    'C': { tile: 'poi4', label: 'C' },
+    'D': { tile: 'poi4', label: 'D' },
+    'E': { tile: 'poi4', label: 'E' },
+    'F': { tile: 'poi4', label: 'F' },
+    /* POI — hazard */
+    '!': { tile: 'poi3', label: '!' },
+    /* Hidden / fog */
+    '?': { tile: 'stone' },
+    /* Tree markers */
+    '^': { tile: 'poi3', label: '^' },
+    'T': { tile: 'poi3', label: 'T' },
+    /* Direction overlays */
+    '>': { tile: 'stone', label: '>' },
+    '<': { tile: 'stone', label: '<' },
+    'V': { tile: 'stone', label: 'v' },
+    /* Structural markers */
+    '=': { tile: 'autothinwall' },  /* balcony railing / fence line */
+    /* Fallback for unrecognised — handled below */
+  };
+
+  /* Parse the full ASCII map spec text. Returns { grid, meta, encounter } or null on failure. */
+  function parseASCIIMap(text) {
+    /* 1. Extract map grid from ```map fence */
+    const fenceMatch = text.match(/```map\s*\n([\s\S]*?)```/);
+    if (!fenceMatch) return null;
+
+    const rawGrid = fenceMatch[1];
+    const rows    = rawGrid.split('\n');
+    /* Remove trailing empty lines */
+    while (rows.length && rows[rows.length - 1].trim() === '') rows.pop();
+    if (!rows.length) return null;
+
+    /* 2. Pre-normalise rows: runs of 2+ consecutive lowercase letters are inline text
+          labels (room names like "kitchen", "war.room"). Convert them to [bracket]
+          format so the bracket parser below handles them as label overlays.
+          Single-char floor tiles (s, c, d, w, v …) are never affected. */
+    const normaliseRow = (row) => {
+      /* Replace runs of 2+ lowercase alpha chars with [run] */
+      return row.replace(/[a-z]{2,}/g, m => `[${m}]`);
+    };
+
+    /* 3. Parse each row character by character, handling [bracket label] sequences */
+    const parsedRows = rows.map(rawRow => {
+      const row  = normaliseRow(rawRow);
+      const cols = [];
+      let i = 0;
+      while (i < row.length) {
+        if (row[i] === '[') {
+          /* Bracket label: read until ] */
+          const end   = row.indexOf(']', i);
+          const label = end === -1 ? row.slice(i + 1) : row.slice(i + 1, end);
+          /* First col of bracket → stone + label, rest → stone */
+          cols.push({ ch: '.', bracketLabel: label });
+          const len = end === -1 ? row.length - i : end - i + 1;
+          for (let k = 1; k < len; k++) cols.push({ ch: '.' });
+          i = end === -1 ? row.length : end + 1;
+        } else {
+          cols.push({ ch: row[i] });
+          i++;
+        }
+      }
+      return cols;
+    });
+
+    const gridW = Math.max(...parsedRows.map(r => r.length));
+    /* Pad short rows with stone */
+    parsedRows.forEach(r => { while (r.length < gridW) r.push({ ch: '.' }); });
+
+    /* 3. Parse metadata block (everything outside the fence) */
+    const meta = {};
+    const after = text.replace(/```map[\s\S]*?```/, '').trim();
+
+    const lineVal = (key) => {
+      const m = after.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
+      return m ? m[1].trim() : null;
+    };
+    meta.name     = lineVal('MAP')      || 'Imported Map';
+    meta.size     = lineVal('SIZE');
+    meta.type     = lineVal('TYPE');
+    meta.lighting = lineVal('LIGHTING');
+    meta.scale    = lineVal('SCALE');
+    meta.floors   = lineVal('FLOORS');
+
+    /* Encounter blocks */
+    const blockRe = (section) => {
+      const m = after.match(new RegExp(`${section}:\\s*\n((?:[ \\t]+[^\\n]+\\n?)*)`));
+      return m ? m[1] : null;
+    };
+
+    meta.enemies   = blockRe('ENEMIES');
+    meta.players   = blockRe('PLAYERS');
+    meta.hazards   = blockRe('HAZARDS');
+    meta.fearMoves = blockRe('FEAR MOVES');
+    meta.notes     = blockRe('NOTES');
+
+    /* WALLS block */
+    const wallsRaw = blockRe('WALLS');
+    const thinwalls = {};
+    if (wallsRaw) {
+      for (const line of wallsRaw.split('\n')) {
+        const m2 = line.match(/(\d+)\s*,\s*(\d+)\s*,\s*([NSEW])\s*=\s*(thin|auto)/i);
+        if (m2) {
+          const row = parseInt(m2[1]), col = parseInt(m2[2]), edge = m2[3].toUpperCase();
+          thinwalls[`${col},${row},${edge}`] = true;
+        }
+      }
+    }
+
+    return { parsedRows, gridW, gridH: parsedRows.length, meta, thinwalls };
+  }
+
+  /* Apply parsed ASCII result to the active floor */
+  function applyASCIIToFloor(parsed, fl, map, targetW, targetH) {
+    const { parsedRows, thinwalls } = parsed;
+
+    /* Apply grid dimensions (caller already computed targetW/H based on resize checkbox) */
+    map.gridW = targetW;
+    map.gridH = targetH;
+
+    /* Write tiles and labels */
+    for (let gy = 0; gy < parsedRows.length; gy++) {
+      const row = parsedRows[gy];
+      for (let gx = 0; gx < row.length; gx++) {
+        const { ch, bracketLabel } = row[gx];
+        const key = `${gx},${gy}`;
+
+        if (bracketLabel !== undefined) {
+          /* Bracket label: floor tile + label */
+          fl.cells[key]  = 'stone';
+          fl.labels[key] = bracketLabel;
+          continue;
+        }
+
+        const sym = ASCII_SYMBOLS[ch];
+        if (sym) {
+          fl.cells[key] = sym.tile;
+          if (sym.label) fl.labels[key] = sym.label;
+        } else {
+          /* Unknown symbol → stone, log warning */
+          fl.cells[key] = 'stone';
+          console.warn(`[ASCII Import] Unknown symbol '${ch}' at (row ${gy}, col ${gx}) — using stone.`);
+        }
+      }
+    }
+
+    /* Write thin walls */
+    if (!fl.thinwalls) fl.thinwalls = {};
+    Object.assign(fl.thinwalls, thinwalls);
+  }
+
+  /* Build and show the encounter panel */
+  let _encounterData = null;
+
+  function showEncounterPanel(meta) {
+    _encounterData = meta;
+    let panel = document.getElementById('mb-encounter-panel');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'mb-encounter-panel';
+      panel.className = 'mb-encounter-panel';
+      /* Insert into viewport wrapper */
+      const vp = _container?.querySelector('.mb-viewport-wrap');
+      if (vp) vp.appendChild(panel);
+      else _container?.appendChild(panel);
+    }
+
+    const fmtBlock = (title, raw) => {
+      if (!raw?.trim()) return '';
+      const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean);
+      return `<div class="mb-enc-section">
+        <div class="mb-enc-heading">${title}</div>
+        ${lines.map(l => `<div class="mb-enc-line">${l}</div>`).join('')}
+      </div>`;
+    };
+
+    panel.innerHTML = `
+      <div class="mb-enc-header">
+        <div class="mb-enc-title">${meta.name || 'Encounter'}</div>
+        <button class="mb-enc-close" id="mb-enc-close-btn">✕</button>
+      </div>
+      <div class="mb-enc-meta">
+        ${meta.type     ? `<span>${meta.type}</span>`     : ''}
+        ${meta.lighting ? `<span>${meta.lighting}</span>` : ''}
+        ${meta.scale    ? `<span>${meta.scale}</span>`    : ''}
+      </div>
+      <div class="mb-enc-body">
+        ${fmtBlock('Enemies',     meta.enemies)}
+        ${fmtBlock('Players',     meta.players)}
+        ${fmtBlock('Hazards',     meta.hazards)}
+        ${fmtBlock('Fear Moves',  meta.fearMoves)}
+        ${fmtBlock('GM Notes',    meta.notes)}
+      </div>`;
+
+    panel.querySelector('#mb-enc-close-btn').addEventListener('click', () => {
+      panel.remove();
+      _encounterData = null;
+    });
+  }
+
+  /* Open the ASCII import modal */
+  function importASCII() {
+    /* Remove any existing modal */
+    document.getElementById('mb-ascii-modal')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id        = 'mb-ascii-modal';
+    overlay.className = 'mb-link-modal';
+
+    overlay.innerHTML = `
+      <div class="mb-link-inner mb-ascii-inner">
+        <div class="mb-link-header">
+          <span class="mb-link-title">Import ASCII Map</span>
+          <button class="mb-link-close" id="mb-ascii-close">✕</button>
+        </div>
+        <div class="mb-ascii-body">
+          <p class="mb-ascii-hint">Paste a map block from Claude Web. Include the \`\`\`map\`\`\` fence and all metadata sections below it.</p>
+          <textarea id="mb-ascii-input" class="mb-ascii-textarea" placeholder="Paste map here…" spellcheck="false"></textarea>
+          <div class="mb-ascii-options">
+            <label class="mb-ascii-label">
+              <input type="radio" name="mb-ascii-target" value="current" checked> Write to current floor
+            </label>
+            <label class="mb-ascii-label">
+              <input type="radio" name="mb-ascii-target" value="new"> Create new floor
+            </label>
+            <label class="mb-ascii-label">
+              <input type="checkbox" id="mb-ascii-resize"> Auto-resize grid to fit
+            </label>
+          </div>
+          <div id="mb-ascii-error" class="mb-ascii-error"></div>
+        </div>
+        <div class="mb-link-footer">
+          <button class="mb-btn" id="mb-ascii-cancel">Cancel</button>
+          <button class="mb-btn mb-btn-ascii-ok" id="mb-ascii-ok">Import Map</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    overlay.querySelector('#mb-ascii-close').addEventListener('click', close);
+    overlay.querySelector('#mb-ascii-cancel').addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('#mb-ascii-ok').addEventListener('click', () => {
+      const text    = overlay.querySelector('#mb-ascii-input').value;
+      const target  = overlay.querySelector('input[name="mb-ascii-target"]:checked').value;
+      const resize  = overlay.querySelector('#mb-ascii-resize').checked;
+      const errEl   = overlay.querySelector('#mb-ascii-error');
+      errEl.textContent = '';
+
+      const parsed = parseASCIIMap(text);
+      if (!parsed) {
+        errEl.textContent = 'Could not find a ```map block. Check that the fence is included.';
+        return;
+      }
+
+      const map = activeMap();
+      if (!map) { errEl.textContent = 'No active map.'; return; }
+
+      let fl;
+      if (target === 'new') {
+        const flName = parsed.meta.name || 'Imported Floor';
+        fl = newFloor(flName);
+        map.floors.push(fl);
+        _floor = map.floors.length - 1;
+      } else {
+        fl = activeFloor();
+        if (!fl) { errEl.textContent = 'No active floor.'; return; }
+      }
+
+      const curW = map.gridW || DEFAULT_GRID_W;
+      const curH = map.gridH || DEFAULT_GRID_H;
+      const targetW = resize ? Math.max(parsed.gridW + 2, curW) : curW;
+      const targetH = resize ? Math.max(parsed.gridH + 2, curH) : curH;
+
+      applyASCIIToFloor(parsed, fl, map, targetW, targetH);
+      save();
+
+      /* Rebuild UI and show encounter panel */
+      rebuildAll();
+      showEncounterPanel(parsed.meta);
+
+      const { gridW, gridH, meta } = parsed;
+      const eCount = (meta.enemies || '').trim().split('\n').filter(l => l.trim() && !l.includes('None')).length;
+      const pCount = (meta.players || '').trim().split('\n').filter(l => l.trim() && !l.includes('none')).length;
+
+      close();
+      /* Brief status in the hint bar — query after rebuild */
+      requestAnimationFrame(() => {
+        const hint = _container?.querySelector('.mb-hint');
+        if (hint) {
+          const orig = hint.textContent;
+          hint.textContent = `Map rendered — ${meta.name}, ${gridW}×${gridH}, ${eCount} enemies, ${pCount} players.`;
+          setTimeout(() => { if (hint.isConnected) hint.textContent = orig; }, 6000);
+        }
+      });
+    });
+
+    /* Focus the textarea */
+    setTimeout(() => overlay.querySelector('#mb-ascii-input')?.focus(), 50);
+  }
+
+  /* ════════════════════════════════════════════
      JPEG EXPORT
      Renders the active floor to an offscreen canvas and downloads as JPEG.
      Crops to the bounding box of painted cells with a small padding.
@@ -1558,45 +1963,63 @@ const MapBuilder = (() => {
     const m = activeMap();
     if (!m) return;
 
-    const pages   = (typeof Endale !== 'undefined') ? Endale.getPages() : {};
+    /* ── Collect location cards only ── */
     const entries = [];
+    const pages = (typeof Endale !== 'undefined') ? Endale.getPages() : {};
     for (const [pageId, pageData] of Object.entries(pages)) {
       if (!pageData.groups) continue;
       pageData.groups.forEach((group, gi) => {
         if (group.type !== 'cards') return;
         group.entries.forEach((entry, ei) => {
+          if (entry.cardType !== 'location') return;
           entries.push({
-            key: `${pageId}|${gi}|${ei}`,
-            pageTitle: pageData.title || pageId,
-            name: entry.name,
-            role: entry.role || '',
+            key:      `${pageId}|${gi}|${ei}`,
+            name:     entry.name,
+            subtitle: entry.role || pageData.title || pageId,
           });
         });
       });
     }
+    /* Custom location cards */
+    try {
+      const customs = JSON.parse(localStorage.getItem('endale-custom-cards')) || [];
+      customs.filter(c => c.cardType === 'location').forEach(c => {
+        entries.push({
+          key:      `custom|${c._customId}`,
+          name:     c.name,
+          subtitle: c.role || 'Custom location',
+        });
+      });
+    } catch {}
 
     const modal = document.createElement('div');
     modal.id        = 'mb-link-modal';
     modal.className = 'mb-link-modal';
 
     const itemsHtml = entries.length === 0
-      ? '<div class="mb-link-empty">No cards found.</div>'
+      ? '<div class="mb-link-empty">No location cards found.</div>'
       : entries.map(e =>
           `<button class="mb-link-item${m.linkedKey === e.key ? ' mb-link-active' : ''}" data-key="${e.key}">
              <span class="mb-link-name">${e.name}</span>
-             <span class="mb-link-meta">${e.pageTitle}${e.role ? ' · ' + e.role : ''}</span>
+             <span class="mb-link-meta">${e.subtitle}</span>
            </button>`
         ).join('');
 
     modal.innerHTML = `
       <div class="mb-link-inner">
         <div class="mb-link-header">
-          <span class="mb-link-title">Link Map to Card</span>
+          <span class="mb-link-title">Link to Location</span>
           <button class="mb-link-close">✕</button>
         </div>
-        <input class="mb-link-search" type="text" placeholder="Filter cards…">
+        <input class="mb-link-search" type="text" placeholder="Filter locations…">
         <div class="mb-link-list">${itemsHtml}</div>
-        ${m.linkedKey ? `<div class="mb-link-footer"><button class="mb-link-unlink">Remove link</button></div>` : ''}
+        <div class="mb-link-footer">
+          <div class="mb-link-new-row">
+            <input id="mb-link-new-name" class="mb-link-new-input" type="text" placeholder="New location name…">
+            <button class="mb-btn mb-link-create-btn" id="mb-link-create-btn">+ Create &amp; Link</button>
+          </div>
+          ${m.linkedKey ? `<button class="mb-link-unlink">Remove link</button>` : ''}
+        </div>
       </div>`;
 
     modal.querySelector('.mb-link-close').addEventListener('click', () => modal.remove());
@@ -1617,6 +2040,39 @@ const MapBuilder = (() => {
       });
     });
 
+    /* Create & Link new location */
+    modal.querySelector('#mb-link-create-btn').addEventListener('click', () => {
+      const nameInput = modal.querySelector('#mb-link-new-name');
+      const name = nameInput.value.trim();
+      if (!name) { nameInput.focus(); return; }
+
+      /* Build a minimal location card and persist it */
+      const customId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const card = {
+        _customId:  customId,
+        cardType:   'location',
+        name,
+        role:       'Location',
+        rank:       [''],
+        fields:     [
+          { label: 'Atmosphere', value: '' },
+          { label: 'NPCs present', value: '' },
+          { label: 'Points of interest', value: '' },
+        ],
+        gmNote: '',
+        quote:  '',
+        tags:   [],
+      };
+      try {
+        const existing = JSON.parse(localStorage.getItem('endale-custom-cards')) || [];
+        existing.push(card);
+        localStorage.setItem('endale-custom-cards', JSON.stringify(existing));
+      } catch {}
+
+      m.linkedKey = `custom|${customId}`;
+      save(); modal.remove(); updateLinkBtn();
+    });
+
     const unlinkBtn = modal.querySelector('.mb-link-unlink');
     if (unlinkBtn) {
       unlinkBtn.addEventListener('click', () => {
@@ -1631,6 +2087,13 @@ const MapBuilder = (() => {
 
   function resolveLinkedName(m) {
     if (!m?.linkedKey) return null;
+    if (m.linkedKey.startsWith('custom|')) {
+      const id = m.linkedKey.slice(7);
+      try {
+        const customs = JSON.parse(localStorage.getItem('endale-custom-cards')) || [];
+        return customs.find(c => c._customId === id)?.name || null;
+      } catch { return null; }
+    }
     const pages = (typeof Endale !== 'undefined') ? Endale.getPages() : {};
     const [pageId, gi, ei] = m.linkedKey.split('|');
     return pages[pageId]?.groups?.[+gi]?.entries?.[+ei]?.name || null;
@@ -1833,56 +2296,101 @@ const MapBuilder = (() => {
 
     toolbar.append(drawModeGroup, brushGroup, selModeGroup, mkDivider());
 
-    /* ─ Group: Tile tools ─ */
-    const toolGroup = document.createElement('div');
-    toolGroup.className = 'mb-group mb-tools';
-    [
-      { tool: 'wall',         label: 'Wall'          },
-      { tool: 'thinwall',     label: 'Thin Wall'     },
-      { tool: 'stone',        label: 'Stone'         },
-      { tool: 'cave',         label: 'Cave'          },
-      { tool: 'grass',        label: 'Grass'         },
-      { tool: 'dirt',         label: 'Dirt'          },
-      { tool: 'sand',         label: 'Sand'          },
-      { tool: 'wood',         label: 'Wood Floor'    },
-      { tool: 'carpet',       label: 'Carpet'        },
-      { tool: 'autowall',     label: 'Auto Wall'     },
-      { tool: 'autothinwall', label: 'Auto Thin Wall'},
-      { tool: 'door',       label: 'Door'      },
-      { tool: 'stairs',     label: 'Stairs ↑'  },
-      { tool: 'stairsdown', label: 'Stairs ↓'  },
-      { tool: 'table',      label: 'Table'     },
-      { tool: 'water',      label: 'Water'     },
-      { tool: 'special',    label: 'POI'       },
-      { tool: 'poi2',       label: 'POI Red'   },
-      { tool: 'poi3',       label: 'POI Green' },
-      { tool: 'poi4',       label: 'POI Blue'  },
-      { tool: 'label',      label: 'Label'          },
-      { tool: 'erase',      label: 'Erase'          },
-      { tool: 'erasewall',  label: 'Erase Walls'    },
-    ].forEach(({ tool, label }) => {
-      const btn = mkBtn(label, `mb-btn mb-tool-btn${_tool === tool ? ' mb-tool-active' : ''}`);
-      btn.dataset.tool = tool;
-      if (TILES[tool]) btn.style.setProperty('--tile-color', TILES[tool].color);
-      toolGroup.appendChild(btn);
-    });
-    toolbar.append(toolGroup, mkDivider());
+    /* ── Helper: build a labelled tool sub-group ── */
+    const mkToolGroup = (catLabel, tools) => {
+      const grp = document.createElement('div');
+      grp.className = 'mb-group';
+      const lbl = Object.assign(document.createElement('span'), {
+        className: 'mb-cat-label', textContent: catLabel,
+      });
+      grp.appendChild(lbl);
+      tools.forEach(({ tool, label }) => {
+        const btn = mkBtn(label, `mb-btn mb-tool-btn${_tool === tool ? ' mb-tool-active' : ''}`);
+        btn.dataset.tool = tool;
+        if (TILES[tool]) btn.style.setProperty('--tile-color', TILES[tool].color);
+        grp.appendChild(btn);
+      });
+      return grp;
+    };
 
-    /* ─ Group: File / Link / Clear ─ */
+    /* ─ Row 1: Tile tools in semantic groups ─ */
+    toolbar.append(
+      mkToolGroup('Walls', [
+        { tool: 'wall',         label: 'Wall'      },
+        { tool: 'autowall',     label: 'Auto'      },
+        { tool: 'thinwall',     label: 'Thin'      },
+        { tool: 'autothinwall', label: 'Auto Thin' },
+      ]),
+      mkDivider(),
+      mkToolGroup('Floors', [
+        { tool: 'stone',  label: 'Stone'  },
+        { tool: 'cave',   label: 'Cave'   },
+        { tool: 'grass',  label: 'Grass'  },
+        { tool: 'dirt',   label: 'Dirt'   },
+        { tool: 'sand',   label: 'Sand'   },
+        { tool: 'wood',   label: 'Wood'   },
+        { tool: 'carpet', label: 'Carpet' },
+      ]),
+      mkDivider(),
+      mkToolGroup('Objects', [
+        { tool: 'door',       label: 'Door'    },
+        { tool: 'stairs',     label: 'Stairs ↑'},
+        { tool: 'stairsdown', label: 'Stairs ↓'},
+        { tool: 'table',      label: 'Table'   },
+        { tool: 'barrel',     label: 'Barrel'  },
+        { tool: 'water',      label: 'Water'   },
+      ]),
+      mkDivider(),
+      mkToolGroup('Markers', [
+        { tool: 'poi2',    label: 'Enemy'   },
+        { tool: 'poi4',    label: 'Player'  },
+        { tool: 'poi3',    label: 'Hazard'  },
+        { tool: 'special', label: 'Special' },
+        { tool: 'label',   label: 'Label'   },
+      ]),
+      mkDivider(),
+      mkToolGroup('Erase', [
+        { tool: 'erase',      label: 'All'    },
+        { tool: 'erasewall',  label: 'Walls'  },
+        { tool: 'eraselabel', label: 'Labels' },
+      ]),
+    );
+
+    /* ── Forced row break ── */
+    const rowBreak = document.createElement('div');
+    rowBreak.className = 'mb-toolbar-break';
+    toolbar.appendChild(rowBreak);
+
+    /* ─ Row 2: File / Export / Canvas / Grid / Zoom ─ */
+
+    /* File I/O */
     const fileGroup = document.createElement('div');
     fileGroup.className = 'mb-group';
-    const btnExport   = mkBtn('Export',       'mb-btn');
-    const btnImport   = mkBtn('Import',       'mb-btn');
-    const btnJPEG     = mkBtn('Save JPEG',    'mb-btn mb-btn-jpeg');
-    const btnFoundry  = mkBtn('→ Foundry',    'mb-btn mb-btn-foundry');
-    const btnLink     = mkBtn('', 'mb-btn');
-    btnLink.id = 'mb-link-btn';
-    updateLinkBtnEl(btnLink, m);
-    const btnClear    = mkBtn('Clear Floor',  'mb-btn mb-btn-danger');
-    fileGroup.append(btnExport, btnImport, btnJPEG, btnFoundry, btnLink, mkDivider(), btnClear);
+    const btnExport = mkBtn('Export JSON', 'mb-btn');
+    const btnImport = mkBtn('Import JSON', 'mb-btn');
+    const btnAscii  = mkBtn('Import ASCII', 'mb-btn mb-btn-ascii');
+    fileGroup.append(btnExport, btnImport, btnAscii);
     toolbar.append(fileGroup, mkDivider());
 
-    /* ─ Group: Grid size ─ */
+    /* Export formats */
+    const exportGroup = document.createElement('div');
+    exportGroup.className = 'mb-group';
+    const btnJPEG    = mkBtn('Save JPEG',  'mb-btn mb-btn-jpeg');
+    const btnFoundry = mkBtn('→ Foundry',  'mb-btn mb-btn-foundry');
+    const btnLink    = mkBtn('', 'mb-btn');
+    btnLink.id = 'mb-link-btn';
+    updateLinkBtnEl(btnLink, m);
+    exportGroup.append(btnJPEG, btnFoundry, btnLink);
+    toolbar.append(exportGroup, mkDivider());
+
+    /* Canvas ops */
+    const canvasGroup = document.createElement('div');
+    canvasGroup.className = 'mb-group';
+    const btnClear = mkBtn('Clear Floor', 'mb-btn mb-btn-danger');
+    canvasGroup.append(btnClear);
+    toolbar.append(canvasGroup, mkDivider());
+
+    /* Grid size */
     const gridGroup = document.createElement('div');
     gridGroup.className = 'mb-group';
     const gridLabel  = Object.assign(document.createElement('span'), { className: 'mb-grid-label', textContent: 'Grid' });
@@ -1899,7 +2407,7 @@ const MapBuilder = (() => {
     gridGroup.append(gridLabel, gridWInput, gridXSpan, gridHInput, btnApplyGrid);
     toolbar.append(gridGroup, mkDivider());
 
-    /* ─ Group: Zoom ─ */
+    /* Zoom */
     const zoomGroup  = document.createElement('div');
     zoomGroup.className = 'mb-group';
     const btnZoomOut = mkBtn('−', 'mb-zoom-btn');
@@ -1923,13 +2431,16 @@ const MapBuilder = (() => {
     container.appendChild(floorBar);
 
     /* ── Viewport + canvas ── */
+    const vpWrap = document.createElement('div');
+    vpWrap.className = 'mb-viewport-wrap';
     const viewport = document.createElement('div');
     viewport.className = 'mb-viewport';
     _canvas = document.createElement('canvas');
     _canvas.className    = 'mb-canvas';
     _canvas.style.cursor = getCursor();
     viewport.appendChild(_canvas);
-    container.appendChild(viewport);
+    vpWrap.appendChild(viewport);
+    container.appendChild(vpWrap);
 
     _ctx = _canvas.getContext('2d');
     initInput();
@@ -2006,7 +2517,7 @@ const MapBuilder = (() => {
     });
 
     /* Tools */
-    toolGroup.querySelectorAll('.mb-tool-btn').forEach(btn => {
+    toolbar.querySelectorAll('.mb-tool-btn').forEach(btn => {
       btn.addEventListener('click', () => setTool(btn.dataset.tool));
     });
 
@@ -2014,6 +2525,7 @@ const MapBuilder = (() => {
     /* File */
     btnExport  .addEventListener('click', exportMap);
     btnImport  .addEventListener('click', importMap);
+    btnAscii   .addEventListener('click', importASCII);
     btnJPEG    .addEventListener('click', exportJPEG);
     btnFoundry .addEventListener('click', exportFoundry);
     btnLink    .addEventListener('click', openLinkModal);

@@ -647,6 +647,32 @@ const Endale = (() => {
      SIDEBAR FOOTER — + Section and Edit buttons
   ════════════════════════════════════════════ */
 
+  function exportState() {
+    const KEYS = [
+      'endale-nav',
+      'endale-custom-cards',
+      'endale-additions',
+      'endale-hidden',
+      'endale-overrides',
+      'endale-maps',
+      'endale-board',
+    ];
+    const state = {};
+    for (const k of KEYS) {
+      try {
+        const raw = localStorage.getItem(k);
+        if (raw) state[k] = JSON.parse(raw);
+      } catch {}
+    }
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {
+      href: url, download: 'endale-state.json',
+    });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
   function buildNavFooter() {
     document.getElementById('nav-add-section-btn').addEventListener('click', () => {
       const label = prompt('New group name:');
@@ -655,6 +681,8 @@ const Endale = (() => {
       saveNav();
       buildNav();
     });
+
+    document.getElementById('nav-export-state-btn').addEventListener('click', exportState);
 
     const editBtn = document.getElementById('nav-edit-btn');
     editBtn.addEventListener('click', () => {
