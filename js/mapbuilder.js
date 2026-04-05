@@ -105,7 +105,8 @@ const MapBuilder = (() => {
   let _tool      = 'wall';
   let _drawMode  = 'single';  /* 'single' | 'select' */
   let _brushSize = 1;         /* 1,3,5,7,9 — symmetric square brush */
-  let _selMode   = 'add';   /* 'add' | 'move' — only used in select drawMode */
+  let _selMode   = 'add';     /* 'add' | 'move' — only used in select drawMode */
+  let _shadows   = true;      /* wall → floor shadow pass toggle */
 
   /* ── Interaction state ── */
   let _drawing  = false;
@@ -215,7 +216,7 @@ const MapBuilder = (() => {
     }
 
     /* Wall → floor shadow pass */
-    drawShadowPass(_ctx, fl, x0, y0, x1, y1, csz);
+    if (_shadows) drawShadowPass(_ctx, fl, x0, y0, x1, y1, csz);
 
     /* Thin wall edge lines */
     drawThinWallPass(_ctx, fl, x0, y0, x1, y1, csz);
@@ -1734,7 +1735,7 @@ const MapBuilder = (() => {
     }
 
     /* Wall → floor shadow pass */
-    drawShadowPass(ctx, fl, ox - 1, oy - 1, ex + 2, ey + 2, CSZ);
+    if (_shadows) drawShadowPass(ctx, fl, ox - 1, oy - 1, ex + 2, ey + 2, CSZ);
 
     /* Thin wall edge lines */
     drawThinWallPass(ctx, fl, ox - 1, oy - 1, ex + 2, ey + 2, CSZ);
@@ -2386,8 +2387,10 @@ const MapBuilder = (() => {
     /* Canvas ops */
     const canvasGroup = document.createElement('div');
     canvasGroup.className = 'mb-group';
-    const btnClear = mkBtn('Clear Floor', 'mb-btn mb-btn-danger');
-    canvasGroup.append(btnClear);
+    const btnClear   = mkBtn('Clear Floor', 'mb-btn mb-btn-danger');
+    const btnShadows = mkBtn('Shadows', 'mb-btn mb-btn-toggle' + (_shadows ? ' active' : ''));
+    btnShadows.title = 'Toggle wall drop-shadows';
+    canvasGroup.append(btnClear, btnShadows);
     toolbar.append(canvasGroup, mkDivider());
 
     /* Grid size */
@@ -2535,6 +2538,12 @@ const MapBuilder = (() => {
       if (!fl || !confirm('Clear all tiles on this floor?')) return;
       fl.cells = {}; fl.labels = {};
       save(); draw();
+    });
+
+    btnShadows.addEventListener('click', () => {
+      _shadows = !_shadows;
+      btnShadows.classList.toggle('active', _shadows);
+      draw();
     });
 
     /* Grid size */

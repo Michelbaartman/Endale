@@ -92,6 +92,10 @@
   color: #f0a0a0;
 }
 
+.mb-btn-toggle { color: var(--text-label); }
+.mb-btn-toggle.active { color: #90c878; border-color: #406030; background: #0e1e0a; }
+.mb-btn-toggle.active:hover { color: #b0e898; border-color: #608050; background: #182e10; }
+
 /* Tool buttons — colour swatch via ::before */
 .mb-tool-btn {
   padding-left: 22px;
