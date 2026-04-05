@@ -203,7 +203,8 @@ const Board = (() => {
 
     container.innerHTML = `
       <div class="board-toolbar">
-        <button id="board-add-btn" class="board-btn board-btn-add">＋ Add Card</button>
+        <button id="board-add-btn"  class="board-btn board-btn-add">＋ Add Card</button>
+        <button id="board-enc-btn"  class="board-btn board-btn-encounter">⚔ Encounter</button>
         <span class="board-hint">Scroll to zoom · drag background to pan · double-click canvas to create · double-click card body to edit in place</span>
         <div class="board-zoom-controls">
           <button id="board-zoom-out"   class="board-zoom-btn" title="Zoom out">−</button>
@@ -241,6 +242,7 @@ const Board = (() => {
 
     /* Toolbar */
     document.getElementById('board-add-btn').addEventListener('click', openModal);
+    document.getElementById('board-enc-btn').addEventListener('click', addEncounterPin);
     document.getElementById('board-clear-btn').addEventListener('click', () => {
       if (confirm('Remove all cards from the session board?')) {
         _state.pins = [];
@@ -325,6 +327,8 @@ const Board = (() => {
   ════════════════════════════════════════════ */
 
   function renderPin(pin) {
+    if (pin.isEncounter) { renderEncounterPin(pin); return; }
+
     let cardHTML;
 
     if (pin.isCustom) {
@@ -401,6 +405,7 @@ const Board = (() => {
      image key and override key — edits and art stay in sync.
      Custom cards store a data copy (they have no stable identity). */
   function extractCardData(pin) {
+    if (pin.isEncounter) return null;
     if (pin.isCustom) return { _customId: pin._customId };
 
     if (pin.groupType === 'cards') {
@@ -477,7 +482,8 @@ const Board = (() => {
             `left:${startMouseX - grabOffsetX}px;top:${startMouseY - grabOffsetY}px;` +
             `transform-origin:${grabOffsetX}px ${grabOffsetY}px;` +
             `transition:transform 0.15s ease;`;
-          ghost.appendChild(pinEl.querySelector('.card').cloneNode(true));
+          const ghostSrc = pinEl.querySelector('.card') || pinEl.querySelector('.enc-card');
+          if (ghostSrc) ghost.appendChild(ghostSrc.cloneNode(true));
           document.body.appendChild(ghost);
 
           /* Dim the original pin on the canvas */
@@ -527,7 +533,8 @@ const Board = (() => {
           Endale.resolveNavDrop(ev.clientX, ev.clientY);
           inNavZone = false;
         } else if (!dragged) {
-          pinEl.querySelector('.card').classList.toggle('open');
+          const cardEl = pinEl.querySelector('.card');
+          if (cardEl) cardEl.classList.toggle('open');
         } else {
           saveState();
         }
@@ -719,6 +726,209 @@ const Board = (() => {
       const gnt = el.querySelector('.gm-note-text');
       if (q   && override.quote  !== undefined) q.textContent   = override.quote;
       if (gnt && override.gmNote !== undefined) gnt.textContent = override.gmNote;
+    });
+  }
+
+  /* ════════════════════════════════════════════
+     ENCOUNTER TRACKER
+  ════════════════════════════════════════════ */
+
+  function addEncounterPin() {
+    const vw = _viewport ? _viewport.clientWidth  : 800;
+    const vh = _viewport ? _viewport.clientHeight : 600;
+    const cx = (vw / 2 - _tx) / _scale;
+    const cy = (vh / 2 - _ty) / _scale;
+    const offset = (_state.pins.length % 8) * 24;
+    const pin = {
+      id:          uid(),
+      isEncounter: true,
+      title:       'Encounter',
+      combatants:  [],
+      x: Math.max(0, cx - 140 + offset),
+      y: Math.max(0, cy - 60  + offset),
+    };
+    _state.pins.push(pin);
+    saveState();
+    renderEncounterPin(pin);
+  }
+
+  function renderEncounterPin(pin) {
+    const el = document.createElement('div');
+    el.className     = 'board-pin enc-pin';
+    el.dataset.pinId = pin.id;
+    el.style.cssText = `left:${pin.x}px;top:${pin.y}px;z-index:${++_zTop};`;
+
+    el.innerHTML =
+      `<button class="board-pin-remove" title="Remove from board">✕</button>
+       <div class="enc-card">
+         <div class="card-header h-hostile enc-header">
+           <input class="enc-title-input" value="${esc(pin.title || 'Encounter')}" placeholder="Encounter title">
+         </div>
+         <div class="enc-body">
+           <div class="enc-rows"></div>
+           <button class="enc-add-row-btn">＋ Add Combatant</button>
+         </div>
+       </div>`;
+
+    _canvas.appendChild(el);
+
+    const rowsEl = el.querySelector('.enc-rows');
+    (pin.combatants || []).forEach(c => appendCombatantRow(rowsEl, pin, c));
+
+    el.querySelector('.enc-title-input').addEventListener('change', e => {
+      pin.title = e.target.value.trim() || 'Encounter';
+      saveState();
+    });
+
+    el.querySelector('.enc-add-row-btn').addEventListener('click', () => {
+      const c = {
+        id: uid(), name: 'Combatant',
+        hp: 10, maxHp: 10,
+        armor: 0, maxArmor: 0,
+        conditions: { hidden: false, vulnerable: false, restrained: false },
+      };
+      if (!pin.combatants) pin.combatants = [];
+      pin.combatants.push(c);
+      saveState();
+      appendCombatantRow(rowsEl, pin, c);
+    });
+
+    el.querySelector('.board-pin-remove').addEventListener('click', e => {
+      e.stopPropagation();
+      _state.pins = _state.pins.filter(p => p.id !== pin.id);
+      saveState();
+      el.remove();
+    });
+
+    initDrag(el, pin);
+  }
+
+  function appendCombatantRow(container, pin, c) {
+    /* Back-fill fields absent on older saved combatants */
+    if (c.armor    === undefined) c.armor    = 0;
+    if (c.maxArmor === undefined) c.maxArmor = 0;
+    if (!c.conditions) c.conditions = { hidden: false, vulnerable: false, restrained: false };
+
+    const row = document.createElement('div');
+    row.className    = 'enc-row';
+    row.dataset.cid  = c.id;
+
+    function hpPct() {
+      return c.maxHp > 0 ? Math.max(0, Math.min(100, (c.hp / c.maxHp) * 100)) : 0;
+    }
+    function barClass(p) {
+      if (p <= 0)  return 'enc-bar-dead';
+      if (p <= 25) return 'enc-bar-red';
+      if (p <= 50) return 'enc-bar-amber';
+      return 'enc-bar-green';
+    }
+    function updateBar() {
+      const p    = hpPct();
+      const fill = row.querySelector('.enc-bar-fill');
+      fill.style.width = p + '%';
+      fill.className   = 'enc-bar-fill ' + barClass(p);
+      row.classList.toggle('enc-down', c.hp <= 0);
+    }
+
+    function condClass(key) {
+      return c.conditions[key] ? ` enc-cond-on enc-cond-${key}` : '';
+    }
+
+    const p0 = hpPct();
+    row.innerHTML =
+      `<div class="enc-row-top">
+         <input class="enc-name-input" value="${esc(c.name)}" placeholder="Name" spellcheck="false">
+         <button class="enc-row-remove" title="Remove">×</button>
+       </div>
+       <div class="enc-stat-row">
+         <span class="enc-stat-lbl">HP</span>
+         <button class="enc-btn enc-minus" title="Damage (−1)">−</button>
+         <span class="enc-hp-val">${c.hp}</span>
+         <span class="enc-hp-sep">/</span>
+         <input class="enc-max-input" type="number" min="1" value="${c.maxHp}" title="Max HP" spellcheck="false">
+         <button class="enc-btn enc-plus" title="Heal (+1)">＋</button>
+       </div>
+       <div class="enc-stat-row">
+         <span class="enc-stat-lbl">AR</span>
+         <button class="enc-btn enc-armor-minus" title="Use armor slot">−</button>
+         <span class="enc-armor-val">${c.armor}</span>
+         <span class="enc-hp-sep">/</span>
+         <input class="enc-armor-max" type="number" min="0" value="${c.maxArmor}" title="Max armor slots" spellcheck="false">
+         <button class="enc-btn enc-armor-plus" title="Restore armor slot">＋</button>
+       </div>
+       <div class="enc-conditions">
+         <button class="enc-cond${condClass('hidden')}"     data-cond="hidden">Hidden</button>
+         <button class="enc-cond${condClass('vulnerable')}" data-cond="vulnerable">Vulnerable</button>
+         <button class="enc-cond${condClass('restrained')}" data-cond="restrained">Restrained</button>
+       </div>
+       <div class="enc-bar-wrap">
+         <div class="enc-bar-fill ${barClass(p0)}" style="width:${p0}%"></div>
+       </div>`;
+
+    if (c.hp <= 0) row.classList.add('enc-down');
+    container.appendChild(row);
+
+    /* ── HP controls ── */
+    const hpValEl  = row.querySelector('.enc-hp-val');
+    const maxInput = row.querySelector('.enc-max-input');
+
+    maxInput.addEventListener('change', () => {
+      c.maxHp = Math.max(1, parseInt(maxInput.value) || 1);
+      maxInput.value = c.maxHp;
+      if (c.hp > c.maxHp) { c.hp = c.maxHp; hpValEl.textContent = c.hp; }
+      updateBar();
+      saveState();
+    });
+    row.querySelector('.enc-minus').addEventListener('click', e => {
+      e.stopPropagation();
+      if (c.hp > 0) { c.hp--; hpValEl.textContent = c.hp; updateBar(); saveState(); }
+    });
+    row.querySelector('.enc-plus').addEventListener('click', e => {
+      e.stopPropagation();
+      if (c.hp < c.maxHp) { c.hp++; hpValEl.textContent = c.hp; updateBar(); saveState(); }
+    });
+
+    /* ── Armor controls ── */
+    const armorValEl  = row.querySelector('.enc-armor-val');
+    const armorMaxIn  = row.querySelector('.enc-armor-max');
+
+    armorMaxIn.addEventListener('change', () => {
+      c.maxArmor = Math.max(0, parseInt(armorMaxIn.value) || 0);
+      armorMaxIn.value = c.maxArmor;
+      if (c.armor > c.maxArmor) { c.armor = c.maxArmor; armorValEl.textContent = c.armor; }
+      saveState();
+    });
+    row.querySelector('.enc-armor-minus').addEventListener('click', e => {
+      e.stopPropagation();
+      if (c.armor > 0) { c.armor--; armorValEl.textContent = c.armor; saveState(); }
+    });
+    row.querySelector('.enc-armor-plus').addEventListener('click', e => {
+      e.stopPropagation();
+      if (c.armor < c.maxArmor) { c.armor++; armorValEl.textContent = c.armor; saveState(); }
+    });
+
+    /* ── Condition toggles ── */
+    row.querySelectorAll('.enc-cond').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const key = btn.dataset.cond;
+        c.conditions[key] = !c.conditions[key];
+        btn.classList.toggle('enc-cond-on',      c.conditions[key]);
+        btn.classList.toggle(`enc-cond-${key}`,  c.conditions[key]);
+        saveState();
+      });
+    });
+
+    /* ── Remove row ── */
+    row.querySelector('.enc-name-input').addEventListener('change', e => {
+      c.name = e.target.value;
+      saveState();
+    });
+    row.querySelector('.enc-row-remove').addEventListener('click', e => {
+      e.stopPropagation();
+      pin.combatants = pin.combatants.filter(x => x.id !== c.id);
+      saveState();
+      row.remove();
     });
   }
 

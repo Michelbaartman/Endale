@@ -5,10 +5,11 @@
 
 const Endale = (() => {
 
-  const NAV_KEY          = 'endale-nav';
-  const ADDITIONS_KEY    = 'endale-additions';
-  const HIDDEN_KEY       = 'endale-hidden';
-  const CUSTOM_CARDS_KEY = 'endale-custom-cards';
+  const NAV_KEY           = 'endale-nav';
+  const ADDITIONS_KEY     = 'endale-additions';
+  const HIDDEN_KEY        = 'endale-hidden';
+  const CUSTOM_CARDS_KEY  = 'endale-custom-cards';
+  const CUSTOM_PAGES_KEY  = 'endale-custom-page-defs';
   const ACTIVE_PAGE   = 'sessions/board';
   const MAP_PAGE      = 'map-builder';
   const CATALOGUE_PAGE = 'catalogue';
@@ -22,10 +23,11 @@ const Endale = (() => {
 
   /* ── Reference nav — quick-access pages (locked) ── */
   const REF_NAV = [
-    { id: 'rules/dm-cheatsheet', label: 'DM Cheatsheet'   },
-    { id: 'sessions/recap',      label: 'Session Recap'   },
-    { id: 'story/threads',       label: 'Story Threads'   },
-    { id: CATALOGUE_PAGE,        label: 'Full Catalogue'  },
+    { id: 'rules/dm-cheatsheet',   label: 'DM Cheatsheet'   },
+    { id: 'rules/level-context',   label: 'Level Context'   },
+    { id: 'sessions/recap',        label: 'Session Recap'   },
+    { id: 'story/threads',         label: 'Story Threads'   },
+    { id: CATALOGUE_PAGE,          label: 'Full Catalogue'  },
   ];
 
   /* ── Page registry ── */
@@ -68,6 +70,20 @@ const Endale = (() => {
 
   function saveNav() {
     localStorage.setItem(NAV_KEY, JSON.stringify(_nav));
+  }
+
+  /* ── Custom page definitions (pages created via nav + button) ── */
+
+  function loadCustomPageDefs() {
+    try { return JSON.parse(localStorage.getItem(CUSTOM_PAGES_KEY)) || {}; }
+    catch { return {}; }
+  }
+
+  function saveCustomPageDef(id, label) {
+    const defs = loadCustomPageDefs();
+    defs[id] = { title: label, subtitle: '', groups: [] };
+    localStorage.setItem(CUSTOM_PAGES_KEY, JSON.stringify(defs));
+    _pages[id] = defs[id];
   }
 
   /* ── Additions persistence ── */
@@ -510,6 +526,7 @@ const Endale = (() => {
             <span class="nav-drag-handle" title="Drag to reorder">⠿</span>
             <span class="nav-section-label">${section.label}</span>
             ${hasChildren ? `<span class="nav-arrow">&#9658;</span>` : ''}
+            <button class="nav-add-page-btn" data-si="${si}" title="Add page to this group">+</button>
             <button class="nav-delete-btn" data-ds="${si}" title="Remove section">✕</button>
           </div>
           ${hasChildren ? `<div class="nav-children">${childrenHTML}</div>` : ''}
@@ -526,7 +543,7 @@ const Endale = (() => {
     /* Section expand / collapse */
     navTree.querySelectorAll('.nav-section-header.has-children').forEach(header => {
       header.addEventListener('click', e => {
-        if (e.target.closest('.nav-drag-handle') || e.target.closest('.nav-delete-btn')) return;
+        if (e.target.closest('.nav-drag-handle') || e.target.closest('.nav-delete-btn') || e.target.closest('.nav-add-page-btn')) return;
         const sectionEl = header.closest('.nav-section');
         const si = +sectionEl.dataset.sectionIdx;
         _nav[si]._open = !_nav[si]._open;
@@ -540,6 +557,23 @@ const Endale = (() => {
       item.addEventListener('click', e => {
         if (e.target.closest('.nav-delete-btn')) return;
         navigate(item.dataset.page);
+      });
+    });
+
+    /* Add page buttons — visible on hover, create a new page under the group */
+    navTree.querySelectorAll('.nav-add-page-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const si = +btn.dataset.si;
+        const label = prompt('New page name:');
+        if (!label || !label.trim()) return;
+        const newId = 'custom/' + uid();
+        saveCustomPageDef(newId, label.trim());
+        _nav[si].children.push({ id: newId, label: label.trim() });
+        _nav[si]._open = true;
+        saveNav();
+        buildNav();
+        navigate(newId);
       });
     });
 
@@ -1438,6 +1472,12 @@ const Endale = (() => {
   }
 
   function init() {
+    /* Register any pages created via the nav + button */
+    const customPageDefs = loadCustomPageDefs();
+    Object.entries(customPageDefs).forEach(([id, def]) => {
+      if (!_pages[id]) _pages[id] = def;
+    });
+
     _nav = loadNav();
     buildCoreNav();
     buildRefNav();

@@ -303,6 +303,36 @@ html, body {
   color: #a06060;
 }
 
+/* ── Add-page button (+ on group hover) ── */
+.nav-add-page-btn {
+  display: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #608060;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: 2px;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.nav-section-header:hover .nav-add-page-btn {
+  display: flex;
+}
+.nav-add-page-btn:hover {
+  background: #1a3a1a;
+  border-color: #407040;
+  color: #90d090;
+}
+/* Hide + button when in delete mode so the two don't compete */
+#nav-tree.delete-mode .nav-add-page-btn { display: none !important; }
+
 /* ═══════════════════════════════════════════════
    Sidebar footer — Styles / + Section / Edit
    ═══════════════════════════════════════════════ */

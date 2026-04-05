@@ -586,3 +586,265 @@
   padding: 16px 0 20px;
   gap: 8px;
 }
+
+/* ════════════════════════════════════════════
+   ENCOUNTER TRACKER
+════════════════════════════════════════════ */
+
+.board-btn-encounter {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-accent);
+}
+.board-btn-encounter:hover { color: #c05050; border-color: #c05050; }
+
+.enc-card {
+  width: 270px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 3px 3px 12px rgba(0,0,0,0.55);
+  transition: box-shadow 0.15s;
+}
+.board-pin.dragging .enc-card {
+  box-shadow: 6px 8px 24px rgba(0,0,0,0.75);
+}
+
+/* Header — reuses card-header + h-hostile, add title input */
+.enc-header {
+  cursor: grab;
+  gap: 8px;
+}
+.enc-header:active { cursor: grabbing; }
+
+.enc-title-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  color: inherit;
+  outline: none;
+  cursor: text;
+  min-width: 0;
+}
+.enc-title-input::placeholder { color: rgba(255,255,255,0.4); }
+
+/* Body */
+.enc-body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.enc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Individual combatant row */
+.enc-row {
+  background: var(--bg-input);
+  border: 1px solid var(--border-card-inner);
+  border-radius: 3px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: opacity 0.2s;
+}
+.enc-row.enc-down { opacity: 0.45; }
+
+.enc-row-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.enc-name-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  color: var(--text-primary);
+  outline: none;
+  min-width: 0;
+  transition: border-color 0.1s;
+  padding-bottom: 1px;
+}
+.enc-name-input:focus { border-bottom-color: var(--accent); }
+
+.enc-row-remove {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-label);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, color 0.1s;
+}
+.enc-row-remove:hover { background: #3a1010; color: #f0a0a0; }
+
+/* Stat rows — HP and Armor share the same layout */
+.enc-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.enc-stat-lbl {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  font-family: Georgia, serif;
+  min-width: 16px;
+  flex-shrink: 0;
+}
+
+.enc-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: 1px solid var(--border-accent);
+  background: transparent;
+  color: var(--text-body);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+}
+.enc-btn:hover { background: var(--bg-gm-note); color: var(--text-primary); }
+
+.enc-hp-val {
+  font-family: Georgia, serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-primary);
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.enc-armor-val {
+  font-family: Georgia, serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-secondary);
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.enc-hp-sep {
+  color: var(--text-label);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* Shared style for max-HP and max-Armor inputs */
+.enc-max-input,
+.enc-armor-max {
+  width: 32px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-card-inner);
+  font-family: Georgia, serif;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+  outline: none;
+  padding-bottom: 1px;
+  transition: border-color 0.1s;
+  -moz-appearance: textfield;
+}
+.enc-max-input::-webkit-outer-spin-button,
+.enc-max-input::-webkit-inner-spin-button,
+.enc-armor-max::-webkit-outer-spin-button,
+.enc-armor-max::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.enc-max-input:focus,
+.enc-armor-max:focus { border-bottom-color: var(--accent); }
+
+/* HP bar */
+.enc-bar-wrap {
+  height: 3px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 1px;
+}
+.enc-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.2s ease, background-color 0.3s ease;
+}
+.enc-bar-green { background: #4a8a4a; }
+.enc-bar-amber { background: #b07820; }
+.enc-bar-red   { background: #a02020; }
+.enc-bar-dead  { background: #555; width: 0 !important; }
+
+/* Condition toggles */
+.enc-conditions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+.enc-cond {
+  font-family: Georgia, serif;
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--border-card-inner);
+  background: transparent;
+  color: var(--text-label);
+  cursor: pointer;
+  opacity: 0.4;
+  user-select: none;
+  transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+}
+.enc-cond:hover { opacity: 0.7; }
+
+/* Active condition states */
+.enc-cond.enc-cond-on                          { opacity: 1; }
+.enc-cond.enc-cond-on.enc-cond-hidden          { background: #1e3d5c; border-color: #3a6a9a; color: #90b8e0; }
+.enc-cond.enc-cond-on.enc-cond-vulnerable      { background: #5a1e1e; border-color: #9a3a3a; color: #e8a0a0; }
+.enc-cond.enc-cond-on.enc-cond-restrained      { background: #4a3412; border-color: #8a6030; color: #d4a860; }
+
+/* Add combatant button */
+.enc-add-row-btn {
+  font-family: Georgia, serif;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border-accent);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: 2px;
+  transition: color 0.1s, border-color 0.1s;
+}
+.enc-add-row-btn:hover { color: var(--text-primary); border-color: var(--accent); }
