@@ -43,6 +43,7 @@ const Endale = (() => {
   const NAV_DEFAULT = [
     { id: 'characters', label: 'Characters', _open: true, children: [
       { id: 'characters/player-characters',  label: 'Player Characters' },
+      { id: 'characters/player-families',    label: 'Player Families' },
       { id: 'characters/key-individuals',    label: 'Key Individuals' },
       { id: 'characters/lionguard',          label: 'Lionguard' },
       { id: 'characters/applecrumb-faction', label: 'Applecrumb Faction' },
@@ -685,6 +686,7 @@ const Endale = (() => {
     const KEYS = [
       'endale-nav',
       'endale-custom-cards',
+      'endale-custom-page-defs',
       'endale-additions',
       'endale-hidden',
       'endale-overrides',
@@ -917,6 +919,8 @@ const Endale = (() => {
             _hidden:     isHidden || undefined,
             _deleteInfo: isHidden ? undefined : { type: 'original', key },
             ...(ov && {
+              name:   ov.name   !== undefined ? ov.name   : entry.name,
+              role:   ov.role   !== undefined ? ov.role   : entry.role,
               fields: ov.fields !== undefined ? ov.fields : entry.fields,
               gmNote: ov.gmNote !== undefined ? ov.gmNote : entry.gmNote,
               quote:  ov.quote  !== undefined ? ov.quote  : entry.quote,

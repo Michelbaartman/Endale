@@ -47,12 +47,13 @@ from datetime import datetime
 KEYS_TO_BAKE = [
     'endale-nav',
     'endale-custom-cards',
+    'endale-custom-page-defs',  # pages created via the nav + button
     'endale-additions',
     'endale-hidden',
     'endale-overrides',
     'endale-maps',
     'endale-board',
-    'endale-img-links',   # flat dict of { 'img-link:key': 'path/to/art.png' }
+    'endale-img-links',         # flat dict of { 'img-link:key': 'path/to/art.png' }
 ]
 
 # Keys whose values are flat string dicts — restore each entry as a raw string,

@@ -417,23 +417,23 @@ Endale.registerPage('characters/applecrumb-faction', {
         {
           cardType: 'character',
           name: 'Lolo Applecrumb',
-          role: 'Mousekin \u00b7 Fenlow\u2019s sibling \u00b7 Missing',
+          role: 'Mousekin \u00b7 Mother of Sable & siblings \u00b7 Missing',
           rank: ['Applecrumb Family', 'Whereabouts unknown \u00b7 Power 2'],
           fields: [
             { label: 'Appearance',
-              value: 'Young adult. Small even by mousekin standards. The family says little about them now \u2014 a collective flinch whenever the name comes up.' },
+              value: 'The children remember her as warm and unhurried. The family says little about her now \u2014 a collective flinch whenever the name comes up. Fenlow keeps no portraits.' },
             { label: 'Traits',
-              value: 'AGI +2 \u00b7 STR \u22121 \u00b7 FIN +1 \u00b7 INS +2 \u00b7 PRE +2 \u00b7 KNO +2\nMousekin: STR \u22121 \u00b7 size advantage on hiding' },
+              value: 'AGI +2 \u00b7 STR \u22121 \u00b7 FIN +1 \u00b7 INS +2 \u00b7 PRE +3 \u00b7 KNO +2\nMousekin: STR \u22121 \u00b7 size advantage on hiding' },
             { label: 'Defenses',
               value: 'HP 6 \u00b7 Evasion 12 \u00b7 Armor 0 \u00b7 Power 2 \u00b7 Status: missing' },
             { label: 'Status',
-              value: 'Disappeared around the time of the compact. Fenlow\u2019s curse explicitly covers Lolo\u2019s whereabouts \u2014 he cannot speak about them. The family has been told different things by different people. The stories do not match.' },
+              value: 'Disappeared the night of the compact. Fenlow\u2019s curse explicitly covers her whereabouts \u2014 he cannot speak of them. The children were told different things by different relatives. The stories do not match, and no one has pressed hard enough to force a contradiction.' },
             { label: 'What is known',
-              value: 'Was close to Fenlow. Was in Fonn when the compact was signed. Was not seen leaving. No body was found. This is either very good or very bad.' },
+              value: 'Was in Fonn when the compact was signed. Was not seen leaving. No body was found. Pip does not remember her. The older siblings do, and none of them talk about it around Fenlow.' },
           ],
-          gmNote: 'Ossian used Lolo\u2019s fate as leverage to bind Fenlow. Whether Lolo is alive, imprisoned, or transformed is up to the GM \u2014 but the pink feathers Fenlow\u2019s letter references and the path north of the mill are connected to them. The connection between Rook\u2019s grey cloak woman and Lolo\u2019s disappearance is intentional and worth developing.',
+          gmNote: 'Ossian used Lolo\u2019s fate as leverage to bind Fenlow. Whether she is alive, imprisoned, or transformed is up to the GM \u2014 the pink feathers Fenlow\u2019s letter references and the path north of the mill connect to her. The grey cloak woman Rook knew and Lolo\u2019s disappearance may be the same thread.',
           tags: [
-            { label: 'Missing',              cls: 'tag-dark' },
+            { label: 'Missing \u2014 mother',     cls: 'tag-dark' },
             { label: 'Fenlow\u2019s binding',     cls: 'tag-purple' },
             { label: 'Pink feather thread',   cls: 'tag-gold' },
           ]
@@ -489,6 +489,212 @@ Endale.registerPage('characters/applecrumb-faction', {
     },
 
     /* ════════════════════════════════════════════
+       EXTENDED FAMILY — AUNTS, UNCLES & COUSINS
+       All are Rook's descendants. Clide and Jhon
+       (uncle and uncle-by-bond) are in other groups.
+    ════════════════════════════════════════════ */
+    {
+      type: 'cards',
+      headerClass: 'h-town',
+      entries: [
+
+        /* ── AUNTS ─────────────────────────────────────────────── */
+
+        /* ── Willa Applecrumb ───────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Willa Applecrumb',
+          role: 'Mousekin \u00b7 Aunt \u00b7 Rook\u2019s daughter',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Round-faced, always carrying something \u2014 a dish, a basket, a child on one hip. The kind of person whose hands are never empty.' },
+            { label: 'Personality',  value: 'The family\u2019s emotional centre when Lolo was alive. Has taken that role by default since. Holds dinners together. Asks no questions she\u2019s not prepared to answer.' },
+            { label: 'Hook',         value: 'Knows the children are struggling and is covering for it socially. If someone gives her a genuine opening to talk about Lolo, she will cry, and then she will say something useful.' },
+          ],
+          tags: [{ label: 'Family anchor', cls: 'tag-light' }]
+        },
+
+        /* ── Hessa Applecrumb ───────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Hessa Applecrumb',
+          role: 'Mousekin \u00b7 Aunt \u00b7 Rook\u2019s daughter',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Older than Willa, greying early. Quiet manner, sharp eyes. Sits near Rook more than anyone else does.' },
+            { label: 'Personality',  value: 'Practical and unsentimental. Has been watching Rook\u2019s decline with clear eyes and hasn\u2019t decided yet whether what she sees frightens her.' },
+            { label: 'Hook',         value: 'The only family member who regularly spends time with Rook. Knows his good days from his bad ones. On the right day, she can arrange access to him.' },
+          ],
+          tags: [{ label: 'Rook\u2019s keeper', cls: 'tag-mid' }]
+        },
+
+        /* ── Rina Applecrumb (aunt) ─────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Rina Applecrumb',
+          role: 'Mousekin \u00b7 Aunt \u00b7 Rook\u2019s daughter \u00b7 (aunt, not sibling)',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Sibling Rina has her jawline and her directness. The resemblance is unmistakable and slightly unsettling in context.' },
+            { label: 'Personality',  value: 'Blunt. Said out loud \u2014 once, at a family dinner \u2014 that Biggus\u2019s operation was going to get someone killed. Was not invited to the next three. Has not apologised.' },
+            { label: 'Hook',         value: 'The one family member who has been openly critical of Biggus from the start and paid a social price for it. Not a potential ally exactly, but not neutral either. Angry in a way that has nowhere to go.' },
+          ],
+          tags: [{ label: 'Anti-Biggus', cls: 'tag-gold' }, { label: 'Socially sidelined', cls: 'tag-mid' }]
+        },
+
+        /* ── UNCLES ─────────────────────────────────────────────── */
+
+        /* ── Corin Applecrumb ───────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Corin Applecrumb',
+          role: 'Mousekin \u00b7 Uncle \u00b7 Rook\u2019s son',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Trades cloth and dried goods out of a small Fonn stall. Looks like someone who has made a career of being forgettable, and succeeded.' },
+            { label: 'Personality',  value: 'Centrist by survival instinct. Has never taken a public position on anything in his life. This has been enormously useful to Biggus\u2019s operation as a passive resource.' },
+            { label: 'Hook',         value: 'His stall has been used as a message relay point without him explicitly agreeing to it. He tells himself he doesn\u2019t know the details. He knows more than he admits.' },
+          ],
+          tags: [{ label: 'Passive relay point', cls: 'tag-mid' }]
+        },
+
+        /* ── Moss Applecrumb ────────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Moss Applecrumb',
+          role: 'Mousekin \u00b7 Uncle \u00b7 Rook\u2019s son',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'A woodworker. Hands always have sawdust in the creases. Calm in the way of someone who spends most of their time alone with something that requires patience.' },
+            { label: 'Personality',  value: 'The quietest of Rook\u2019s children. Not unintelligent \u2014 just genuinely more interested in his craft than in family politics. Has been watching the situation with low-grade dread.' },
+            { label: 'Hook',         value: 'Made something for Rook a long time ago at Rook\u2019s specific request \u2014 he\u2019s not sure what it was for, but he remembers the dimensions and the material exactly, because Rook was unusually precise about it.' },
+          ],
+          tags: [{ label: 'Rook\u2019s commission', cls: 'tag-purple' }]
+        },
+
+        /* ── COUSINS ────────────────────────────────────────────── */
+
+        /* ── Mela Applecrumb ────────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Mela Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Willa\u2019s eldest',
+          rank: ['Extended Family', 'Friendly \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Cheerful, well-fed, always slightly distracted. Willa\u2019s eldest and clearly raised with warmth.' },
+            { label: 'Hook',         value: 'Treats the current situation as drama rather than crisis, which makes her oddly useful \u2014 she talks freely about things others would guard, because she doesn\u2019t know she\u2019s doing it.' },
+          ],
+          tags: [{ label: 'Unguarded talker', cls: 'tag-light' }]
+        },
+
+        /* ── Sefi Applecrumb ────────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Sefi Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Hessa\u2019s eldest',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Bookish, careful with words. Gets Hessa\u2019s quiet watchfulness.' },
+            { label: 'Hook',         value: 'Has been keeping a written record of family events \u2014 dates, names, what was said at which gathering. Started it as a personal habit. It is now an inadvertent archive.' },
+          ],
+          tags: [{ label: 'Keeps records', cls: 'tag-blue' }]
+        },
+
+        /* ── Poppy Applecrumb ───────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Poppy Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Willa\u2019s youngest',
+          rank: ['Extended Family', 'Friendly \u00b7 Power 1'],
+          fields: [
+            { label: 'Appearance',   value: 'A child, smaller than Pip but not by much. Follows older cousins everywhere.' },
+            { label: 'Hook',         value: 'Overheard something she wasn\u2019t supposed to at the last family dinner. Has no idea what it means. Has been repeating fragments of it as a kind of game.' },
+          ],
+          tags: [{ label: 'Child', cls: 'tag-green' }, { label: 'Heard something', cls: 'tag-gold' }]
+        },
+
+        /* ── Tess Applecrumb ────────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Tess Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Corin\u2019s daughter',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Efficient, market-sharp, always counting something in her head.' },
+            { label: 'Hook',         value: 'Helps Corin run the stall. Knows the message relay is happening and has made a private calculation that involvement isn\u2019t worth the risk. This calculation could change.' },
+          ],
+          tags: [{ label: 'Knows about the relay', cls: 'tag-mid' }]
+        },
+
+        /* ── Fenna Applecrumb ───────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Fenna Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Moss\u2019s daughter',
+          rank: ['Extended Family', 'Friendly \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Has her father\u2019s patience, expressed through embroidery and small carvings rather than furniture.' },
+            { label: 'Hook',         value: 'One of the few cousins with no investment in Biggus\u2019s operation and no real knowledge of it. A genuine civilian. Could be a safe point of contact within the family.' },
+          ],
+          tags: [{ label: 'Uninvolved \u2014 safe contact', cls: 'tag-green' }]
+        },
+
+        /* ── Lyla Applecrumb ────────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Lyla Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Rina-aunt\u2019s daughter',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Has her mother\u2019s directness without the full social price paid for it yet.' },
+            { label: 'Hook',         value: 'Growing up watching her mother be sidelined for saying true things has made her more careful about when she speaks. She still says true things. She just waits for the right moment.' },
+          ],
+          tags: [{ label: 'Careful truth-teller', cls: 'tag-mid' }]
+        },
+
+        /* ── Kip Applecrumb ─────────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Kip Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Corin\u2019s son',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Young adult, restless, keen to be useful in a way that makes him slightly dangerous.' },
+            { label: 'Hook',         value: 'Has been orbiting Biggus\u2019s operation without being formally brought in. Nib finds him irritating. Nessa finds him a resource to be managed. Neither has fully committed to him either way.' },
+          ],
+          tags: [{ label: 'Orbit of the operation', cls: 'tag-red' }]
+        },
+
+        /* ── Sai Applecrumb ─────────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Sai Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Hessa\u2019s younger',
+          rank: ['Extended Family', 'Neutral \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Quieter than Sefi, more observant. Gets Hessa\u2019s eyes \u2014 the ones that see more than they let on.' },
+            { label: 'Hook',         value: 'Has been visiting Rook independently, separate from Hessa. Hasn\u2019t told anyone what they talk about. May not fully know themselves.' },
+          ],
+          tags: [{ label: 'Visits Rook alone', cls: 'tag-purple' }]
+        },
+
+        /* ── Nori Applecrumb ────────────────────────────────────── */
+        {
+          cardType: 'character',
+          name: 'Nori Applecrumb',
+          role: 'Mousekin \u00b7 Cousin \u00b7 Moss\u2019s son',
+          rank: ['Extended Family', 'Friendly \u00b7 Power 2'],
+          fields: [
+            { label: 'Appearance',   value: 'Soft-spoken, slightly out of place at family gatherings. Prefers the company of one person at a time.' },
+            { label: 'Hook',         value: 'Has been helping injured or displaced townsfolk quietly since the operation started. Not political about it \u2014 just doing it. The party may encounter his work before they encounter him.' },
+          ],
+          tags: [{ label: 'Quietly helping', cls: 'tag-green' }]
+        },
+
+      ]
+    },
+
+    /* ════════════════════════════════════════════
        QUICK REFERENCE ROSTER
     ════════════════════════════════════════════ */
     {
@@ -521,16 +727,36 @@ Endale.registerPage('characters/applecrumb-faction', {
           ]
         },
         {
-          heading: 'The family',
+          heading: 'Siblings & immediate family',
           columns: ['Name', 'Relation', 'Power', 'Hook'],
           rows: [
-            { name: 'Arite',  badge: { label: 'unclear',  cls: 'badge-unknown'  }, cells: ['Older brother',  '3', 'Knows about the night of the compact. Has been protecting someone by staying quiet.'] },
-            { name: 'Lumi',   badge: { label: 'friendly', cls: 'badge-friendly' }, cells: ['Older sister',   '3', 'Protective of Sable. Frightened by Fenlow\u2019s behaviour. Most likely to approach Sable first.'] },
-            { name: 'Mira',   badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Middle sibling', '2', 'Wilfully uninformed. If she learns something, she must pick a side.'] },
-            { name: 'Tilla',  badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Middle sibling', '2', 'Has witnessed things at the mansion she has not reported. Fear, not loyalty.'] },
-            { name: 'Lolo',   badge: { label: 'missing',  cls: 'badge-unknown'  }, cells: ['Fenlow\u2019s sibling', '2', 'Missing since the night of the compact. Fenlow\u2019s curse covers their whereabouts.'] },
-            { name: 'Rook',   badge: { label: 'unknown',  cls: 'badge-unknown'  }, cells: ['Grandfather',    '3', 'Knew the woman in the grey cloak. May hold the origin of Sable\u2019s immunity.'] },
-            { name: 'Pip',    badge: { label: 'innocent', cls: 'badge-friendly' }, cells: ['Youngest \u00b7 child', '1', 'Everyone has agreed, without meeting, to keep Pip out of it.'] },
+            { name: 'Lolo',   badge: { label: 'missing',  cls: 'badge-unknown'  }, cells: ['Mother \u00b7 missing',  '2', 'Missing since the compact. Fenlow\u2019s curse covers her whereabouts. Ossian\u2019s leverage.'] },
+            { name: 'Arite',  badge: { label: 'unclear',  cls: 'badge-unknown'  }, cells: ['Older brother',   '3', 'Knows about the night of the compact. Protecting someone by staying quiet.'] },
+            { name: 'Lumi',   badge: { label: 'friendly', cls: 'badge-friendly' }, cells: ['Older sister',    '3', 'Protective of Sable. Frightened by Fenlow\u2019s behaviour.'] },
+            { name: 'Mira',   badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Middle sibling',  '2', 'Wilfully uninformed. Forced choice coming.'] },
+            { name: 'Tilla',  badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Middle sibling',  '2', 'Has witnessed things at the mansion. Silent from fear.'] },
+            { name: 'Rook',   badge: { label: 'unknown',  cls: 'badge-unknown'  }, cells: ['Grandfather',     '3', 'Knew the grey cloak woman. Possible origin of Sable\u2019s immunity.'] },
+            { name: 'Pip',    badge: { label: 'innocent', cls: 'badge-friendly' }, cells: ['Youngest \u00b7 child', '1', 'Everyone agreed to keep Pip out of it.'] },
+          ]
+        },
+        {
+          heading: 'Aunts, uncles & cousins',
+          columns: ['Name', 'Relation', 'Key hook'],
+          rows: [
+            { name: 'Willa',  badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Aunt (Rook\u2019s daughter)',  'Family emotional anchor. Will say something useful if given space to cry first.'] },
+            { name: 'Hessa',  badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Aunt (Rook\u2019s daughter)',  'Rook\u2019s keeper. Knows his good days. Can arrange access.'] },
+            { name: 'Rina',   badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Aunt (Rook\u2019s daughter)',  'Called out Biggus at a dinner. Was sidelined. Still angry.'] },
+            { name: 'Corin',  badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Uncle (Rook\u2019s son)',      'Stall used as message relay. Tells himself he doesn\u2019t know.'] },
+            { name: 'Moss',   badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Uncle (Rook\u2019s son)',      'Woodworker. Made something specific for Rook once. Remembers the dimensions.'] },
+            { name: 'Mela',   badge: { label: 'friendly', cls: 'badge-friendly' }, cells: ['Cousin (Willa\u2019s)',        'Talks freely. Doesn\u2019t know she\u2019s giving information away.'] },
+            { name: 'Sefi',   badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Cousin (Hessa\u2019s)',        'Keeps a written record of family events. Inadvertent archive.'] },
+            { name: 'Poppy',  badge: { label: 'friendly', cls: 'badge-friendly' }, cells: ['Cousin \u00b7 child (Willa\u2019s)', 'Overheard something she\u2019s been repeating as a game.'] },
+            { name: 'Tess',   badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Cousin (Corin\u2019s)',        'Knows the relay. Made a calculation that staying out is safer.'] },
+            { name: 'Fenna',  badge: { label: 'friendly', cls: 'badge-friendly' }, cells: ['Cousin (Moss\u2019s)',         'Genuinely uninvolved. Safe contact in the family.'] },
+            { name: 'Lyla',   badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Cousin (Rina-aunt\u2019s)',    'Careful truth-teller. Waits for the right moment.'] },
+            { name: 'Kip',    badge: { label: 'hostile',  cls: 'badge-hostile'  }, cells: ['Cousin (Corin\u2019s)',        'Orbiting the operation. Not yet in. Nib finds him irritating.'] },
+            { name: 'Sai',    badge: { label: 'neutral',  cls: 'badge-neutral'  }, cells: ['Cousin (Hessa\u2019s)',        'Visits Rook alone. Hasn\u2019t told anyone what they discuss.'] },
+            { name: 'Nori',   badge: { label: 'friendly', cls: 'badge-friendly' }, cells: ['Cousin (Moss\u2019s)',         'Quietly helping displaced townsfolk. The party may find his work first.'] },
           ]
         }
       ]
